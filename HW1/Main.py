@@ -6,13 +6,15 @@ import os
 import sys
 
 class My_UI(QtWidgets.QMainWindow):
+
     def __init__(self):
         super(My_UI, self).__init__() # Call the inherited classes __init__ method
-        uic.loadUi('UI.ui', self) # Load the .ui file
+        self.ui = uic.loadUi('UI.ui', self) # Load the .ui file
+        self.ui.Train_button.clicked.connect(self.Training)
         self.show() # Show the GUI
     
     def raw_data_process(self):
-        path_to_file = r'.\NN_HW1_DataSet\基本題\2Circle2.txt'
+        path_to_file = r'.\NN_HW1_DataSet\基本題\perceptron1.txt'
         data = []
 
         with open(path_to_file) as f:
@@ -24,13 +26,21 @@ class My_UI(QtWidgets.QMainWindow):
 
     def Hard_limit(self,y):
         if y < 0:
-            return 1
+            return 0
         else:
-            return 2
+            return 1
 
-    def Training(self,max_epoch,lr):
+    def Training(self):
+        max_epoch = 50
+        lr = 0.8
+
+        w= self.Training_w(max_epoch,lr)
+
+        self.Plot(w)
+
+
+    def Training_w(self,max_epoch,lr):
         data = self.raw_data_process()
-        
         
         n_samples = data.shape[0]
         n_features = data.shape[1] - 1
@@ -64,8 +74,8 @@ class My_UI(QtWidgets.QMainWindow):
         
     #     return np.array(y)
 
-    def Plot(self,w,data):
-        
+    def Plot(self,w):
+        data = self.raw_data_process()
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
@@ -74,8 +84,8 @@ class My_UI(QtWidgets.QMainWindow):
         #繪製資料
         idx_1 = [i for i in data[:,2]==1]
         ax.scatter(data[idx_1,0], data[idx_1,1], marker='o', color='g', label=1, s=20)
-        idx_2 = [i for i in data[:,2]==2]
-        ax.scatter(data[idx_2,0], data[idx_2,1], marker='x', color='r', label=2, s=20)
+        idx_2 = [i for i in data[:,2]==0]
+        ax.scatter(data[idx_2,0], data[idx_2,1], marker='x', color='r', label=0, s=20)
         #限制範圍
         ax.set_xlim(-5,5)
         ax.set_ylim(-5,5)
