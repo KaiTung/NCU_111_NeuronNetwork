@@ -14,8 +14,6 @@ class My_UI(QtWidgets.QMainWindow):
         # 替combobox增加選項
         self.comboBox = self.findChild(QtWidgets.QComboBox,"comboBox")
         self.comboBox.addItems(["2Ccircle1","2Circle1","2Circle2","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
-        # 取得lr
-        self.lr = self.findChild(QtWidgets.QTextEdit,"textEdit")
         # 按鈕事件
         self.ui.Train_button.clicked.connect(self.Training)
         self.show() # Show the GUI
@@ -91,25 +89,27 @@ class My_UI(QtWidgets.QMainWindow):
         epoch = 0
 
         while epoch < max_epoch:
-            detect = 0
-            E=0
-            for i in n_samples:
-                v = np.dot(w,X[i])
-                gradient = np.dot(X[i],(v - y))
-                w = w - lr * gradient
-
-            if detect == 0:
-                break
+            for i in range(n_samples):
+                v = sigmoid(np.dot(w,X[i]))
+                gradient = np.dot(X[i],(Y[i] - v))
+                w = w - (lr * gradient)
+                print("w=",w)
             
             epoch += 1
         return w
 
     def Training(self):
-        max_epoch = 200
-        lr = float(self.lr.toPlainText())
-
-        w= self.Training_w(max_epoch,lr)
-        # w= self.Training_w_SGD(max_epoch,lr)
+        # 取得lr
+        lr = float(self.findChild(QtWidgets.QLineEdit,"lineEdit").text())
+        print("lr=",lr)
+        # 取得 Max Epochs
+        max_epoch = int(self.findChild(QtWidgets.QLineEdit,"lineEdit_2").text())
+        print("max_epoch=",max_epoch)
+        # 取得 Accuracy
+        Acc = float(self.findChild(QtWidgets.QLineEdit,"lineEdit_3").text())
+        print("Acc=",Acc)
+        # w = self.Training_w(max_epoch,lr)
+        w = self.Training_w_SGD(max_epoch,lr)
 
         self.Plot(w)
         
