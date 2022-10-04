@@ -71,8 +71,8 @@ class My_UI(QtWidgets.QMainWindow):
         
         return w
 
-    def sigmoid(self,x):
-        return 1/(1+math.exp(-x))
+    def sigmoid(self,v):
+        return 1/(1 + math.exp(-v))
 
     def Training_w_SGD(self,max_epoch,lr):
         path_to_file = '.\\NN_HW1_DataSet\\基本題\\' + self.comboBox.currentText() + ".txt"
@@ -90,9 +90,11 @@ class My_UI(QtWidgets.QMainWindow):
 
         while epoch < max_epoch:
             for i in range(n_samples):
-                v = sigmoid(np.dot(w,X[i]))
-                gradient = np.dot(X[i],(Y[i] - v))
-                w = w - (lr * gradient)
+                v = self.sigmoid(np.dot(w,X[i]))
+                print("v=",v)
+                gradient = (Y[i] - v) * v *(1 - v)
+                print("g=",gradient)
+                w = w + (lr * gradient * Y[i])
                 print("w=",w)
             
             epoch += 1
