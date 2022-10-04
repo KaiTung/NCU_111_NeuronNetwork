@@ -10,7 +10,7 @@ class My_UI(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(My_UI, self).__init__()
-        self.ui = uic.loadUi('UI.ui', self) # 讀入.ui檔
+        self.ui = uic.loadUi('MyGUI.ui', self)
         # 替combobox增加選項
         self.comboBox = self.findChild(QtWidgets.QComboBox,"comboBox")
         self.comboBox.addItems(["2Ccircle1","2Circle1","2Circle2","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
@@ -76,35 +76,33 @@ class My_UI(QtWidgets.QMainWindow):
     def sigmoid(self,x):
         return 1/(1+math.exp(-x))
 
-    # def Training_w_SGD(self,max_epoch,lr):
-    #     path_to_file = '.\\NN_HW1_DataSet\\基本題\\' + self.comboBox.currentText() + ".txt"
-    #     data = self.raw_data_process(path_to_file)
+    def Training_w_SGD(self,max_epoch,lr):
+        path_to_file = '.\\NN_HW1_DataSet\\基本題\\' + self.comboBox.currentText() + ".txt"
+        data = self.raw_data_process(path_to_file)
         
-    #     n_samples = data.shape[0]
-    #     n_features = data.shape[1] - 1
+        n_samples = data.shape[0]
+        n_features = data.shape[1] - 1
         
-    #     X = np.concatenate([data[:,:-1], np.ones((n_samples, 1))], axis=1)    
-    #     Y = data[:,2]
+        X = np.concatenate([data[:,:-1], np.ones((n_samples, 1))], axis=1)    
+        Y = data[:,2]
         
-    #     w = np.random.rand(n_features + 1)
+        w = np.random.rand(n_features + 1)
 
-    #     epoch = 0
+        epoch = 0
 
-    #     while epoch < max_epoch:
-    #         detect = 0
-    #         E=0
-    #         for i in n_samples:
-    #             v = np.dot(w,X[i])
-    #             E += 1/2 * (v - Y[i])**2
-    #             delta_w = 
+        while epoch < max_epoch:
+            detect = 0
+            E=0
+            for i in n_samples:
+                v = np.dot(w,X[i])
+                gradient = np.dot(X[i],(v - y))
+                w = w - lr * gradient
 
-    #         w = w - lr * delta_w
-
-    #         if detect == 0:
-    #             break
+            if detect == 0:
+                break
             
-    #         epoch += 1
-    #     return w
+            epoch += 1
+        return w
 
     def Training(self):
         max_epoch = 200
