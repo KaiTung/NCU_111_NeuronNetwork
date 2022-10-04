@@ -86,7 +86,7 @@ p, li { white-space: pre-wrap; }
    <widget class="QTextEdit" name="textEdit">
     <property name="geometry">
      <rect>
-      <x>270</x>
+      <x>240</x>
       <y>90</y>
       <width>101</width>
       <height>31</height>
@@ -102,16 +102,6 @@ p, li { white-space: pre-wrap; }
       <height>31</height>
      </rect>
     </property>
-    <item>
-     <property name="text">
-      <string>Perceptron1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Perceptron2</string>
-     </property>
-    </item>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -120,7 +110,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>959</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
