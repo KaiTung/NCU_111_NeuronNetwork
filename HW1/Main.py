@@ -30,24 +30,27 @@ class My_UI(QtWidgets.QMainWindow):
 
     def Hard_limit(self,x):
         if self.comboBox.currentText in ["Perceptron1","Perceptron2"]:
-            if x < 0:
+            if x <= 0:
                 return 0
             else:
                 return 1
         else:
-            if x < 0:
+            if x <= 0:
                 return 2
             else:
                 return 1
-
-    def Training_w(self,max_epoch,lr):
+            
+    def sigmoid(self,v):
+        return 1/(1 + math.exp(-v))
+    
+    def PLA(self,max_epoch,lr):
         path_to_file = '.\\NN_HW1_DataSet\\基本題\\' + self.comboBox.currentText() + ".txt"
         data = self.raw_data_process(path_to_file)
         
         n_samples = data.shape[0]
         n_features = data.shape[1] - 1
         
-        X = np.concatenate([data[:,:-1], np.ones((n_samples, 1))], axis=1)    
+        X = np.concatenate([-1 * np.ones((n_samples, 1)),data[:,:-1]], axis=1)    
         Y = data[:,2]
 
         w = np.random.rand(n_features + 1)
@@ -55,15 +58,15 @@ class My_UI(QtWidgets.QMainWindow):
         while epoch < max_epoch:
             detect = 0
             for i in range(n_samples):
-                v  = np.dot(w,X[i])
+                v  = np.dot(w,X[i].T)
                 if Y[i] != self.Hard_limit(v):
                     detect += 1
                     if v < 0:
-                        w += lr * X[i].T
+                        w = w + lr * X[i]
                     else:
-                        w -= lr * X[i].T
-            
-
+                        w = w - lr * X[i]
+                print("w=",w)
+            print("detect=",detect)
             if detect == 0:
                 break
 
@@ -71,34 +74,29 @@ class My_UI(QtWidgets.QMainWindow):
         
         return w
 
-    def sigmoid(self,v):
-        return 1/(1 + math.exp(-v))
-
-    def Training_w_SGD(self,max_epoch,lr):
-        path_to_file = '.\\NN_HW1_DataSet\\基本題\\' + self.comboBox.currentText() + ".txt"
-        data = self.raw_data_process(path_to_file)
+    # def Training_w_SGD(self,max_epoch,lr):
+    #     path_to_file = '.\\NN_HW1_DataSet\\基本題\\' + self.comboBox.currentText() + ".txt"
+    #     data = self.raw_data_process(path_to_file)
         
-        n_samples = data.shape[0]
-        n_features = data.shape[1] - 1
+    #     n_samples = data.shape[0]
+    #     n_features = data.shape[1] - 1
         
-        X = np.concatenate([data[:,:-1], np.ones((n_samples, 1))], axis=1)    
-        Y = data[:,2]
+    #     X = np.concatenate([-1 * np.ones((n_samples, 1)),data[:,:-1]], axis=1)    
+    #     Y = data[:,2]
         
-        w = np.random.rand(n_features + 1)
+    #     w = np.random.rand(n_features + 1)
 
-        epoch = 0
+    #     epoch = 0
 
-        while epoch < max_epoch:
-            for i in range(n_samples):
-                v = self.sigmoid(np.dot(w,X[i]))
-                print("v=",v)
-                gradient = (Y[i] - v) * v *(1 - v)
-                print("g=",gradient)
-                w = w + (lr * gradient * Y[i])
-                print("w=",w)
+    #     while epoch < max_epoch:
+    #         #forward
+    #         for i in range(n_samples):
+    #             v1 = 0
+    #             # delta_j = (d_j - O_j) * O_j * (1 - O_j)
             
-            epoch += 1
-        return w
+    #         #backward
+    #         epoch += 1
+    #     return w
 
     def Training(self):
         # 取得lr
@@ -111,7 +109,7 @@ class My_UI(QtWidgets.QMainWindow):
         Acc = float(self.findChild(QtWidgets.QLineEdit,"lineEdit_3").text())
         print("Acc=",Acc)
         # w = self.Training_w(max_epoch,lr)
-        w = self.Training_w_SGD(max_epoch,lr)
+        w = self.PLA(max_epoch,lr)
 
         self.Plot(w)
         
@@ -135,7 +133,6 @@ class My_UI(QtWidgets.QMainWindow):
         data = self.raw_data_process(path_to_file)
         fig = plt.figure()
         ax = fig.add_subplot(111)
-
         plt.xlabel('X1')
         plt.ylabel('X2')
         #繪製資料
@@ -147,9 +144,9 @@ class My_UI(QtWidgets.QMainWindow):
         #限制範圍
         ax.set_xlim(-10,10)
         ax.set_ylim(-10,10)
-        #取兩點畫線 w0x1 + w1x2 + w2 = 0; x1 = (-w1x2-w2)/w0 ; x2 = (-w0x1 - w2)/w1;(x1,x2)
-        p1 = [0,(0*-w[0] -w[2])/w[1]]
-        p2 = [(0*-w[1]-w[2])/w[0],0]
+        #取兩點畫線 w0*-1 + w1x1 + w2x2 = 0; x1 = (w0 - w2x2)/w1 ; x2 = (w0 - w1x1)/w2;
+        p1 = [0,(w[0] - w[1]*0)/w[2]]
+        p2 = [(w[0] - w[2]*0)/w[1],0]
         plt.axline(p1,p2,label="w1",color='black')
 
         
