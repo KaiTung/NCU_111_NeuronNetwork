@@ -16,19 +16,48 @@ class My_UI(QtWidgets.QMainWindow):
                           "124":["2Circle2"]}
         #取得題號 QComboBox
         self.comboBox = self.findChild(QtWidgets.QComboBox,"comboBox")
-        # 替combobox增加選項
-        self.comboBox.addItems(["2Ccircle1","2Circle1","2Circle2","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
+        self.comboBox2 = self.findChild(QtWidgets.QComboBox,"comboBox_2")
+        self.comboBox.addItems(["基本題","加分題"])
+        self.comboBox2.addItems(["2Ccircle1","2Circle1","2Circle2","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
         # 取得lr QLineEdit
         self.lr = self.findChild(QtWidgets.QLineEdit,"lineEdit")
         # 取得maxEpoch QLineEdit
         self.max_epoch = self.findChild(QtWidgets.QLineEdit,"lineEdit_2")
         # 取得Acc QLineEdit
         self.Acc = self.findChild(QtWidgets.QLineEdit,"lineEdit_3")
+        # 取得label_image
+        self.image_label = self.findChild(QtWidgets.QLabel,"label_image")
+        # 取得label_Acc
+        self.label_Acc = self.findChild(QtWidgets.QLabel,"label_Acc")
+        # 取得label_w
+        self.label_w = self.findChild(QtWidgets.QLabel,"label_w")
         
-        # 按鈕事件
+        self.setWindowIcon(QtGui.QIcon('icon.png'))
+        
+        # 先初始化image_label
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        plt.xlabel('X1')
+        plt.ylabel('X2')
+        plt.savefig("empty.png")
+        self.image_label.setPixmap(QtGui.QPixmap("empty.png"))
+        self.image_label.setScaledContents(True)
+        self.image_label.show() 
+        
+        # combobox改變觸發事件
+        self.comboBox.currentIndexChanged.connect(self.comboBox_change)
+        # Train按鈕事件
         self.ui.Train_button.clicked.connect(self.Training)
         self.show() # Show the GUI
     
+    def comboBox_change(self):
+        if self.comboBox.currentText() == "基本題":
+            self.comboBox2.clear()
+            self.comboBox2.addItems(["2Ccircle1","2Circle1","2Circle2","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
+        elif self.comboBox.currentText() == "加分題":
+            self.comboBox2.clear()
+            self.comboBox2.addItems(["4satellite-6","5CloseS1","8OX","C3D","C10D","IRIS","Number","perceptron3","perceptron4","wine","xor"])
+
     def raw_data_process(self,path_to_file):
         data = []
 
@@ -40,18 +69,18 @@ class My_UI(QtWidgets.QMainWindow):
         return np.array(data).astype(float)
 
     def Hard_limit(self,x):
-        if str(self.comboBox.currentText()) in self.data_type["01"]:
+        if str(self.comboBox2.currentText()) in self.data_type["01"]:
             if x <= 0 : return 0
             else: return 1
-        elif str(self.comboBox.currentText()) in self.data_type["12"]:
+        elif str(self.comboBox2.currentText()) in self.data_type["12"]:
             if x <= 0 : return 1
             else: return 2
             
     def sigmoid(self,v):
         return 1/(1 + math.exp(-v))
     
-    def PLA(self,max_epoch,lr):
-        path_to_file = '.\\NN_HW1_DataSet\\基本題\\' + self.comboBox.currentText() + ".txt"
+    def Training_single_perceptron(self,max_epoch,lr):
+        path_to_file = '.\\NN_HW1_DataSet\\' + self.comboBox.currentText() + '\\' + self.comboBox2.currentText() + ".txt"
         data = self.raw_data_process(path_to_file)
         
         n_samples = data.shape[0]
@@ -60,9 +89,9 @@ class My_UI(QtWidgets.QMainWindow):
         X = np.concatenate([-1 * np.ones((n_samples, 1)),data[:,:-1]], axis=1)    
         Y = data[:,2]
 
-        
         w = np.random.rand(n_features + 1)
         best_w = w
+        best_Acc = 0
         epoch = 0
         while epoch < max_epoch:
 
@@ -74,7 +103,6 @@ class My_UI(QtWidgets.QMainWindow):
                     else:
                         w = w - lr * X[i]
             
-            
             #計算Acc
             wrong = 0
             for i in range(n_samples):
@@ -82,33 +110,34 @@ class My_UI(QtWidgets.QMainWindow):
                 if Y[i] != self.Hard_limit(v):
                     wrong += 1
                 
-            #全對停止
-            if wrong == 0:
+            Acc = (n_samples - wrong) / n_samples
+        
+            # 全對停止
+            if Acc == 1:
+                best_Acc = Acc
                 best_w = w
                 print("完美切割!")
                 break
-            
-            # 達標
-            Acc = (n_samples - wrong) / n_samples
-            if Acc >= float(self.Acc.text()):
-                print("Acc=",Acc)
-                print("達到目標精準度")
+            # 沒全對但是達標
+            elif Acc >= float(self.Acc.text()) and Acc > best_Acc:
+                best_Acc = Acc
                 best_w = w
                 
             epoch += 1
-            
+        self.label_Acc.setText("最佳精準度: " + str(best_Acc))
+        self.label_w.setText("最佳解w: " + str(best_w))
         return best_w
 
 
     def Training(self):
         
-        w = self.PLA(int(self.max_epoch.text()),float(self.lr.text()))
-
+        w = self.Training_single_perceptron(int(self.max_epoch.text()),float(self.lr.text()))
+        
         self.Plot(w)
 
 
     def Plot(self,w):
-        path_to_file = '.\\NN_HW1_DataSet\\基本題\\' + self.comboBox.currentText() + ".txt"
+        path_to_file = '.\\NN_HW1_DataSet\\' + self.comboBox.currentText() + '\\' + self.comboBox2.currentText() + ".txt"
 
         class1 = 1
         class2 = 2
@@ -142,8 +171,10 @@ class My_UI(QtWidgets.QMainWindow):
         p2 = [(w[0] - w[2]*0)/w[1],0]
         plt.axline(p1,p2,label="w1",color='black')
 
+        plt.savefig('pic.png')
         
-        plt.show()
+        self.image_label.setPixmap(QtGui.QPixmap("pic.png"))
+        self.image_label.show() 
 
 def main():
     app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplication
