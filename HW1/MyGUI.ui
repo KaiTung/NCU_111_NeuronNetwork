@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>980</width>
-    <height>668</height>
+    <width>1117</width>
+    <height>863</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,11 +17,16 @@
    <widget class="QPushButton" name="Train_button">
     <property name="geometry">
      <rect>
-      <x>750</x>
+      <x>920</x>
       <y>110</y>
       <width>111</width>
-      <height>31</height>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Train</string>
@@ -30,23 +35,31 @@
    <widget class="QComboBox" name="comboBox">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>100</y>
+      <x>60</x>
+      <y>110</y>
       <width>191</width>
-      <height>31</height>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
     </property>
    </widget>
    <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>-1</y>
-      <width>951</width>
-      <height>101</height>
+      <y>19</y>
+      <width>1101</width>
+      <height>91</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
      <item>
       <widget class="QLabel" name="label">
        <property name="font">
@@ -63,6 +76,9 @@
        <property name="text">
         <string>1. 選擇Dataset</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
       </widget>
      </item>
      <item>
@@ -77,6 +93,9 @@
        </property>
        <property name="text">
         <string>2. 設定學習率</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -93,6 +112,9 @@
        <property name="text">
         <string>3. 設定收斂條件</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
       </widget>
      </item>
      <item>
@@ -105,8 +127,14 @@
        <property name="layoutDirection">
         <enum>Qt::LeftToRight</enum>
        </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>4. 開始訓練</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -115,8 +143,8 @@
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>470</x>
-      <y>110</y>
+      <x>540</x>
+      <y>120</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -133,8 +161,8 @@
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>490</x>
-      <y>150</y>
+      <x>560</x>
+      <y>160</y>
       <width>81</width>
       <height>21</height>
      </rect>
@@ -151,10 +179,10 @@
    <widget class="QLineEdit" name="lineEdit">
     <property name="geometry">
      <rect>
-      <x>270</x>
+      <x>350</x>
       <y>110</y>
-      <width>113</width>
-      <height>22</height>
+      <width>111</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
@@ -169,10 +197,10 @@
    <widget class="QLineEdit" name="lineEdit_2">
     <property name="geometry">
      <rect>
-      <x>590</x>
+      <x>660</x>
       <y>110</y>
-      <width>113</width>
-      <height>22</height>
+      <width>111</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="font">
@@ -181,16 +209,16 @@
      </font>
     </property>
     <property name="text">
-     <string>200</string>
+     <string>100</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_3">
     <property name="geometry">
      <rect>
-      <x>590</x>
-      <y>150</y>
-      <width>113</width>
-      <height>22</height>
+      <x>660</x>
+      <y>160</y>
+      <width>111</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="font">
@@ -208,7 +236,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>980</width>
+     <width>1117</width>
      <height>25</height>
     </rect>
    </property>
