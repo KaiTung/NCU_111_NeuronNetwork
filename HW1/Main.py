@@ -112,16 +112,17 @@ class My_UI(QtWidgets.QMainWindow):
                 
             Acc = (n_samples - wrong) / n_samples
         
-            # 全對停止
-            if Acc == 1:
+            if Acc == 1: #全對停止
                 best_Acc = Acc
                 best_w = w
                 print("完美切割!")
                 break
-            # 沒全對但是達標
-            elif Acc >= float(self.Acc.text()) and Acc > best_Acc:
+            elif  Acc > best_Acc: # 精準度提升
                 best_Acc = Acc
                 best_w = w
+
+            if Acc >= float(self.Acc.text()): #達標停止
+                break
                 
             epoch += 1
         self.label_Acc.setText("最佳精準度: " + str(best_Acc))
