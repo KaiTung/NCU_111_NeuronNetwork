@@ -29,6 +29,8 @@ class My_UI(QtWidgets.QMainWindow):
         self.image_label = self.findChild(QtWidgets.QLabel,"label_image")
         # 取得label_Acc
         self.label_Acc = self.findChild(QtWidgets.QLabel,"label_Acc")
+        # 取得label_Valid_Acc
+        self.label_Valid_Acc = self.findChild(QtWidgets.QLabel,"label_Valid_Acc")
         # 取得label_w
         self.label_w = self.findChild(QtWidgets.QLabel,"label_w")
         
@@ -86,31 +88,43 @@ class My_UI(QtWidgets.QMainWindow):
         n_samples = data.shape[0]
         n_features = data.shape[1] - 1
         
+        train_samples = n_samples // 3 * 2;
+        valid_samples = n_samples - train_samples;
+        
         X = np.concatenate([-1 * np.ones((n_samples, 1)),data[:,:-1]], axis=1)    
         Y = data[:,2]
-
+        
+        rand_sampling = np.random.choice(range(n_samples),valid_samples,replace=False) #隨機取樣序列
+        
+        X_valid = X[rand_sampling]
+        # X_train = X
+        X_train = np.delete(X, rand_sampling, axis = 0)
+        Y_valid = Y[rand_sampling]
+        # Y_train = Y
+        Y_train = np.delete(Y, rand_sampling, axis = 0)
+        
         w = np.random.rand(n_features + 1)
         best_w = w
         best_Acc = 0
         epoch = 0
         while epoch < max_epoch:
 
-            for i in range(n_samples):
-                v  = np.dot(w,X[i].T)
-                if Y[i] != self.Hard_limit(v):
+            for i in range(train_samples):
+                v  = np.dot(w,X_train[i].T)
+                if Y_train[i] != self.Hard_limit(v):
                     if v < 0:
-                        w = w + lr * X[i]
+                        w = w + lr * X_train[i]
                     else:
-                        w = w - lr * X[i]
+                        w = w - lr * X_train[i]
             
             #計算Acc
             wrong = 0
-            for i in range(n_samples):
-                v  = np.dot(w,X[i].T)
-                if Y[i] != self.Hard_limit(v):
+            for i in range(train_samples):
+                v  = np.dot(w,X_train[i].T)
+                if Y_train[i] != self.Hard_limit(v):
                     wrong += 1
                 
-            Acc = (n_samples - wrong) / n_samples
+            Acc = (train_samples - wrong) / train_samples
         
             if Acc == 1: #全對停止
                 best_Acc = Acc
@@ -125,7 +139,18 @@ class My_UI(QtWidgets.QMainWindow):
                 break
                 
             epoch += 1
-        self.label_Acc.setText("最佳精準度: " + str(best_Acc))
+            
+        #計算Valid_Acc
+        valid_wrong = 0
+        for i in range(valid_samples):
+            v  = np.dot(w,X_valid[i].T)
+            if Y_valid[i] != self.Hard_limit(v):
+                valid_wrong += 1
+        
+        valid_Acc = (valid_samples - valid_wrong) / valid_samples
+        
+        self.label_Acc.setText("最佳訓練精準度: " + str(best_Acc))
+        self.label_Valid_Acc.setText("最佳測試精準度: " + str(valid_Acc))
         self.label_w.setText("最佳解w: " + str(best_w))
         return best_w
 
@@ -143,7 +168,7 @@ class My_UI(QtWidgets.QMainWindow):
         class1 = 1
         class2 = 2
 
-        if str(self.comboBox.currentText()) in self.data_type["01"]:
+        if str(self.comboBox2.currentText()) in self.data_type["01"]:
             class1 = 0
             class2 = 1
 
