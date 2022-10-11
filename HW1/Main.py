@@ -12,13 +12,13 @@ class My_UI(QtWidgets.QMainWindow):
         super(My_UI, self).__init__()
         self.ui = uic.loadUi('MyGUI.ui', self)
         self.data_type = {"01":["Perceptron1","Perceptron2"],
-                          "12":["2ring","2Hcircle1","2CS","2cring","2CloseS3","2CloseS2","2CloseS","2Cricle1","2Ccircle1","2Circle2"],
-                          "124":["2Circle2"]}
+                          "12":["2ring","2Hcircle1","2CS","2cring","2CloseS3","2CloseS2","2CloseS","2Cricle1","2Ccircle1"]
+                          }
         #取得題號 QComboBox
         self.comboBox = self.findChild(QtWidgets.QComboBox,"comboBox")
         self.comboBox2 = self.findChild(QtWidgets.QComboBox,"comboBox_2")
         self.comboBox.addItems(["基本題","加分題"])
-        self.comboBox2.addItems(["2Ccircle1","2Circle1","2Circle2","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
+        self.comboBox2.addItems(["2Ccircle1","2Circle1","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
         # 取得lr QLineEdit
         self.lr = self.findChild(QtWidgets.QLineEdit,"lineEdit")
         # 取得maxEpoch QLineEdit
@@ -53,10 +53,10 @@ class My_UI(QtWidgets.QMainWindow):
     def comboBox_change(self):
         if self.comboBox.currentText() == "基本題":
             self.comboBox2.clear()
-            self.comboBox2.addItems(["2Ccircle1","2Circle1","2Circle2","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
+            self.comboBox2.addItems(["2Ccircle1","2Circle1","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
         elif self.comboBox.currentText() == "加分題":
             self.comboBox2.clear()
-            self.comboBox2.addItems(["4satellite-6","5CloseS1","8OX","C3D","C10D","IRIS","Number","perceptron3","perceptron4","wine","xor"])
+            self.comboBox2.addItems(["2Circle2","4satellite-6","5CloseS1","8OX","C3D","C10D","IRIS","Number","perceptron3","perceptron4","wine","xor"])
 
     def raw_data_process(self,path_to_file):
         data = []
@@ -146,10 +146,6 @@ class My_UI(QtWidgets.QMainWindow):
         if str(self.comboBox.currentText()) in self.data_type["01"]:
             class1 = 0
             class2 = 1
-        elif str(self.comboBox.currentText()) in self.data_type["124"]:
-            class1 = 1
-            class2 = 2
-            class3 = 4
 
         data = self.raw_data_process(path_to_file)
         fig = plt.figure()
@@ -161,9 +157,6 @@ class My_UI(QtWidgets.QMainWindow):
         ax.scatter(data[idx_1,0], data[idx_1,1], marker='s', color='b', label=class1, s=20)
         idx_2 = [i for i in data[:,2]==class2]
         ax.scatter(data[idx_2,0], data[idx_2,1], marker='x', color='g', label=class2, s=20)
-        if str(self.comboBox.currentText()) in self.data_type["124"]:
-            idx_3 = [i for i in data[:,2]==class3]
-            ax.scatter(data[idx_3,0], data[idx_3,1], marker='^', color='r', label=class3, s=20)
         plt.legend(loc = 'best')
         #根據資料點自動縮放
         plt.autoscale(enable=True, axis='both', tight=None)
