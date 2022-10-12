@@ -12,7 +12,7 @@ class My_UI(QtWidgets.QMainWindow):
         super(My_UI, self).__init__()
         self.ui = uic.loadUi('MyGUI.ui', self)
         self.data_type = {"01":["Perceptron1","Perceptron2"],
-                          "12":["2ring","2Hcircle1","2CS","2cring","2CloseS3","2CloseS2","2CloseS","2Cricle1","2Ccircle1"]
+                          "12":["2ring","2Hcircle1","2CS","2cring","2CloseS3","2CloseS2","2CloseS","2Circle1","2Ccircle1"]
                           }
         #取得題號 QComboBox
         self.comboBox = self.findChild(QtWidgets.QComboBox,"comboBox")
@@ -199,6 +199,10 @@ def main():
     app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplication
     window = My_UI() # Create an instance of our class
     app.exec_() # Start the application
+
+    #刪掉圖片
+    if os.path.exists("pic.png"):
+        os.remove("pic.png")
 
 
 if __name__ == '__main__':
