@@ -12,14 +12,14 @@ class My_UI(QtWidgets.QMainWindow):
         super(My_UI, self).__init__()
         self.ui = uic.loadUi('MyGUI.ui', self)
 
-        self.data_type = {"01":["Perceptron1","Perceptron2"],
-                          "12":["2ring","2Hcircle1","2CS","2cring","2CloseS3","2CloseS2","2CloseS","2Circle1","2Ccircle1"]
-                          }
         #取得題號 QComboBox
         self.comboBox = self.findChild(QtWidgets.QComboBox,"comboBox")
         self.comboBox2 = self.findChild(QtWidgets.QComboBox,"comboBox_2")
-        self.comboBox.addItems(["基本題","加分題"])
-        self.comboBox2.addItems(["2Ccircle1","2Circle1","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
+        p1 = "./NN_HW1_DataSet/"
+        p2 = os.listdir(p1) #基本題、加分題
+        self.comboBox.addItems(p2)
+        self.comboBox_change()
+        # self.comboBox2.addItems(["2Ccircle1","2Circle1","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
         # 取得lr QLineEdit
         self.lr = self.findChild(QtWidgets.QLineEdit,"lineEdit")
         # 取得maxEpoch QLineEdit
@@ -54,12 +54,9 @@ class My_UI(QtWidgets.QMainWindow):
         self.show() # Show the GUI
     
     def comboBox_change(self):
-        if self.comboBox.currentText() == "基本題":
-            self.comboBox2.clear()
-            self.comboBox2.addItems(["2Ccircle1","2Circle1","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
-        elif self.comboBox.currentText() == "加分題":
-            self.comboBox2.clear()
-            self.comboBox2.addItems(["2Circle2","4satellite-6","5CloseS1","8OX","C3D","C10D","IRIS","Number","perceptron3","perceptron4","wine","xor"])
+        p0 = "./NN_HW1_DataSet/" + self.comboBox.currentText()
+        self.comboBox2.clear()
+        self.comboBox2.addItems(os.listdir(p0))
 
     def raw_data_process(self,path_to_file):
         data = []
@@ -71,20 +68,14 @@ class My_UI(QtWidgets.QMainWindow):
             
         return np.array(data).astype(float)
 
-    def Hard_limit(self,x):
-        if str(self.comboBox2.currentText()) in self.data_type["01"]:
-            if x <= 0 : return 0
-            else: return 1
-        elif str(self.comboBox2.currentText()) in self.data_type["12"]:
-            if x <= 0 : return 1
-            else: return 2
+    def Hard_limit(self,x,Y):
+        if x <= 0 : return Y[0]
+        else: return Y[1]
             
     def sigmoid(self,v):
         return 1/(1 + math.exp(-v))
     
-    def Training_single_perceptron(self,max_epoch,lr):
-        path_to_file = '.\\NN_HW1_DataSet\\' + self.comboBox.currentText() + '\\' + self.comboBox2.currentText() + ".txt"
-        data = self.raw_data_process(path_to_file)
+    def Training_single_perceptron(self,max_epoch,lr,data):
         
         n_samples = data.shape[0]
         n_features = data.shape[1] - 1
@@ -112,7 +103,7 @@ class My_UI(QtWidgets.QMainWindow):
 
             for i in range(train_samples):
                 v  = np.dot(w,X_train[i].T)
-                if Y_train[i] != self.Hard_limit(v):
+                if Y_train[i] != self.Hard_limit(v,np.unique(Y)):
                     if v < 0:
                         w = w + lr * X_train[i]
                     else:
@@ -122,7 +113,7 @@ class My_UI(QtWidgets.QMainWindow):
             wrong = 0
             for i in range(train_samples):
                 v  = np.dot(w,X_train[i].T)
-                if Y_train[i] != self.Hard_limit(v):
+                if Y_train[i] != self.Hard_limit(v,np.unique(Y)):
                     wrong += 1
                 
             Acc = (train_samples - wrong) / train_samples
@@ -145,7 +136,7 @@ class My_UI(QtWidgets.QMainWindow):
         valid_wrong = 0
         for i in range(valid_samples):
             v  = np.dot(w,X_valid[i].T)
-            if Y_valid[i] != self.Hard_limit(v):
+            if Y_valid[i] != self.Hard_limit(v,np.unique(Y)):
                 valid_wrong += 1
         
         valid_Acc = (valid_samples - valid_wrong) / valid_samples
@@ -157,35 +148,26 @@ class My_UI(QtWidgets.QMainWindow):
 
 
     def Training(self):
-        
-        w = self.Training_single_perceptron(int(self.max_epoch.text()),float(self.lr.text()))
-        
-        self.Plot(w)
-
-
-    def Plot(self,w):
-        path_to_file = '.\\NN_HW1_DataSet\\' + self.comboBox.currentText() + '\\' + self.comboBox2.currentText() + ".txt"
+        path_to_file = '.\\NN_HW1_DataSet\\' + self.comboBox.currentText() + '\\' + self.comboBox2.currentText()
         data = self.raw_data_process(path_to_file)
+
+        w = self.Training_single_perceptron(int(self.max_epoch.text()),float(self.lr.text()),data)
+        self.Plot(w,data)
+
+
+    def Plot(self,w,data):
 
         classes = np.unique(data[:,2])
 
-        class1 = 1
-        class2 = 2
-
-        if str(self.comboBox2.currentText()) in self.data_type["01"]:
-            class1 = 0
-            class2 = 1
-
-        
         fig = plt.figure()
         ax = fig.add_subplot(111)
         plt.xlabel('X1')
         plt.ylabel('X2')
         #繪製資料
 
-        for c in len(classes):
+        for c in range(len(classes)):
             idx_1 = [i for i in data[:,2] == classes[c]]
-            ax.scatter(data[idx_1,0], data[idx_1,1], marker='s', color='b', label = classes[c], s=20)
+            ax.scatter(data[idx_1,0], data[idx_1,1], label = classes[c], s=20)
         # idx_2 = [i for i in data[:,2]==class2]
         # ax.scatter(data[idx_2,0], data[idx_2,1], marker='x', color='g', label=class2, s=20)
         plt.legend(loc = 'best')
