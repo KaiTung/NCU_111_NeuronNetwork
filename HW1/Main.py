@@ -11,6 +11,7 @@ class My_UI(QtWidgets.QMainWindow):
     def __init__(self):
         super(My_UI, self).__init__()
         self.ui = uic.loadUi('MyGUI.ui', self)
+
         self.data_type = {"01":["Perceptron1","Perceptron2"],
                           "12":["2ring","2Hcircle1","2CS","2cring","2CloseS3","2CloseS2","2CloseS","2Circle1","2Ccircle1"]
                           }
@@ -164,6 +165,9 @@ class My_UI(QtWidgets.QMainWindow):
 
     def Plot(self,w):
         path_to_file = '.\\NN_HW1_DataSet\\' + self.comboBox.currentText() + '\\' + self.comboBox2.currentText() + ".txt"
+        data = self.raw_data_process(path_to_file)
+
+        classes = np.unique(data[:,2])
 
         class1 = 1
         class2 = 2
@@ -172,16 +176,18 @@ class My_UI(QtWidgets.QMainWindow):
             class1 = 0
             class2 = 1
 
-        data = self.raw_data_process(path_to_file)
+        
         fig = plt.figure()
         ax = fig.add_subplot(111)
         plt.xlabel('X1')
         plt.ylabel('X2')
         #繪製資料
-        idx_1 = [i for i in data[:,2]==class1]
-        ax.scatter(data[idx_1,0], data[idx_1,1], marker='s', color='b', label=class1, s=20)
-        idx_2 = [i for i in data[:,2]==class2]
-        ax.scatter(data[idx_2,0], data[idx_2,1], marker='x', color='g', label=class2, s=20)
+
+        for c in len(classes):
+            idx_1 = [i for i in data[:,2] == classes[c]]
+            ax.scatter(data[idx_1,0], data[idx_1,1], marker='s', color='b', label = classes[c], s=20)
+        # idx_2 = [i for i in data[:,2]==class2]
+        # ax.scatter(data[idx_2,0], data[idx_2,1], marker='x', color='g', label=class2, s=20)
         plt.legend(loc = 'best')
         #根據資料點自動縮放
         plt.autoscale(enable=True, axis='both', tight=None)
