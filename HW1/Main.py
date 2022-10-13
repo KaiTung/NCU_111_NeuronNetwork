@@ -19,7 +19,6 @@ class My_UI(QtWidgets.QMainWindow):
         p2 = os.listdir(p1) #加分題、基本題
         self.comboBox.addItems([p2[1]]) #只完成基本題
         self.comboBox_change()
-        # self.comboBox2.addItems(["2Ccircle1","2Circle1","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
         # 取得lr QLineEdit
         self.lr = self.findChild(QtWidgets.QLineEdit,"lineEdit")
         # 取得maxEpoch QLineEdit
@@ -81,9 +80,6 @@ class My_UI(QtWidgets.QMainWindow):
     def Hard_limit(self,x,Y):
         if x <= 0 : return Y[0]
         else: return Y[1]
-            
-    def sigmoid(self,v):
-        return 1/(1 + math.exp(-v))
     
     def Training_single_perceptron(self,max_epoch,lr,data):
         
@@ -167,9 +163,11 @@ class My_UI(QtWidgets.QMainWindow):
     def Training(self):
         path_to_file = '.\\NN_HW1_DataSet\\' + self.comboBox.currentText() + '\\' + self.comboBox2.currentText()
         data = self.raw_data_process(path_to_file)
-
-        w,X_train,X_valid,Y_train,Y_valid = self.Training_single_perceptron(int(self.max_epoch.text()),float(self.lr.text()),data)
-        self.Plot(w,data,X_train,X_valid,Y_train,Y_valid)
+        try:
+            w,X_train,X_valid,Y_train,Y_valid = self.Training_single_perceptron(int(self.max_epoch.text()),float(self.lr.text()),data)
+            self.Plot(w,data,X_train,X_valid,Y_train,Y_valid)
+        except:
+            print("輸入格式錯誤")
 
 
     def Plot(self,w,data,X_train,X_valid,Y_train,Y_valid):
@@ -193,7 +191,7 @@ class My_UI(QtWidgets.QMainWindow):
         p2 = [(w[0] - w[2]*0)/w[1],0]
         plt.axline(p1,p2,label="L1",color='black')
         plt.legend(loc = 'best')
-        plt.title("Training set")
+        plt.title("Training Set")
         plt.savefig('pic1.png')
 
         fig.clf()
