@@ -27,7 +27,9 @@ class My_UI(QtWidgets.QMainWindow):
         # 取得Acc QLineEdit
         self.Acc = self.findChild(QtWidgets.QLineEdit,"lineEdit_3")
         # 取得label_image
-        self.image_label = self.findChild(QtWidgets.QLabel,"label_image")
+        self.label_image = self.findChild(QtWidgets.QLabel,"label_image")
+        # 取得label_image2
+        self.label_image2 = self.findChild(QtWidgets.QLabel,"label_image2")
         # 取得label_Acc
         self.label_Acc = self.findChild(QtWidgets.QLabel,"label_Acc")
         # 取得label_Valid_Acc
@@ -37,15 +39,21 @@ class My_UI(QtWidgets.QMainWindow):
         
         self.setWindowIcon(QtGui.QIcon('icon.png'))
         
-        # 先初始化image_label
+        # 先初始化label_image
         fig = plt.figure()
         ax = fig.add_subplot(111)
         plt.xlabel('X1')
         plt.ylabel('X2')
         plt.savefig("empty.png")
-        self.image_label.setPixmap(QtGui.QPixmap("empty.png"))
-        self.image_label.setScaledContents(True)
-        self.image_label.show() 
+
+        self.label_image.setPixmap(QtGui.QPixmap("empty.png"))
+        self.label_image.setScaledContents(True)
+        self.label_image.show()
+
+        self.label_image2.setPixmap(QtGui.QPixmap("empty.png"))
+        self.label_image2.setScaledContents(True)
+        self.label_image2.show() 
+
         
         # combobox改變觸發事件
         self.comboBox.currentIndexChanged.connect(self.comboBox_change)
@@ -80,7 +88,7 @@ class My_UI(QtWidgets.QMainWindow):
         n_samples = data.shape[0]
         n_features = data.shape[1] - 1
         
-        train_samples = n_samples // 3 * 2;
+        train_samples = round(n_samples / 3 * 2);
         valid_samples = n_samples - train_samples;
         
         X = np.concatenate([-1 * np.ones((n_samples, 1)),data[:,:-1]], axis=1)    
@@ -156,32 +164,68 @@ class My_UI(QtWidgets.QMainWindow):
 
 
     def Plot(self,w,data):
+        n_samples = data.shape[0]
+        
+        train_samples = round(n_samples / 3 * 2);
+        valid_samples = n_samples - train_samples;
+        
+        X = np.concatenate([-1 * np.ones((n_samples, 1)),data[:,:-1]], axis=1)    
+        Y = data[:,2]
+        
+        rand_sampling = np.random.choice(range(n_samples),valid_samples,replace=False) #隨機取樣序列
+        
+        X_valid = X[rand_sampling]
+        X_train = np.delete(X, rand_sampling, axis = 0)
+        Y_valid = Y[rand_sampling]
+        Y_train = np.delete(Y, rand_sampling, axis = 0)
 
-        classes = np.unique(data[:,2])
+        classes = np.unique(Y)
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
         plt.xlabel('X1')
         plt.ylabel('X2')
-        #繪製資料
 
+        #繪製訓練資料
         for c in range(len(classes)):
-            idx_1 = [i for i in data[:,2] == classes[c]]
-            ax.scatter(data[idx_1,0], data[idx_1,1], label = classes[c], s=20)
-        # idx_2 = [i for i in data[:,2]==class2]
-        # ax.scatter(data[idx_2,0], data[idx_2,1], marker='x', color='g', label=class2, s=20)
-        plt.legend(loc = 'best')
+            idx_1 = [i for i in Y_train == classes[c]]
+            ax.scatter(X_train[idx_1,1], X_train[idx_1,2], label = classes[c], s=20)
+
         #根據資料點自動縮放
         plt.autoscale(enable=True, axis='both', tight=None)
         #取兩點畫線 w0*-1 + w1x1 + w2x2 = 0; x1 = (w0 - w2x2)/w1 ; x2 = (w0 - w1x1)/w2;
         p1 = [0,(w[0] - w[1]*0)/w[2]]
         p2 = [(w[0] - w[2]*0)/w[1],0]
         plt.axline(p1,p2,label="w1",color='black')
+        plt.legend(loc = 'best')
+        plt.title("Training set")
+        plt.savefig('pic1.png')
 
-        plt.savefig('pic.png')
+        fig.clf()
+        ax = fig.add_subplot(111)
+        plt.xlabel('X1')
+        plt.ylabel('X2')
         
-        self.image_label.setPixmap(QtGui.QPixmap("pic.png"))
-        self.image_label.show() 
+        #繪製測試資料
+        for c in range(len(classes)):
+            idx_1 = [i for i in Y_valid == classes[c]]
+            ax.scatter(X_valid[idx_1,1], X_valid[idx_1,2], label = classes[c], s=20)
+    
+        #根據資料點自動縮放
+        plt.autoscale(enable=True, axis='both', tight=None)
+        #取兩點畫線 w0*-1 + w1x1 + w2x2 = 0; x1 = (w0 - w2x2)/w1 ; x2 = (w0 - w1x1)/w2;
+        p1 = [0,(w[0] - w[1]*0)/w[2]]
+        p2 = [(w[0] - w[2]*0)/w[1],0]
+        plt.axline(p1,p2,label="w1",color='black')
+        plt.legend(loc = 'best')
+        plt.title("Validation Set")
+        plt.savefig('pic2.png')
+
+        self.label_image.setPixmap(QtGui.QPixmap("pic1.png"))
+        self.label_image.show()
+
+        self.label_image2.setPixmap(QtGui.QPixmap("pic2.png"))
+        self.label_image2.show()
 
 def main():
     app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplication
@@ -189,8 +233,10 @@ def main():
     app.exec_() # Start the application
 
     #刪掉圖片
-    if os.path.exists("pic.png"):
-        os.remove("pic.png")
+    if os.path.exists("pic1.png"):
+        os.remove("pic1.png")
+    if os.path.exists("pic2.png"):
+        os.remove("pic2.png")
 
 
 if __name__ == '__main__':
