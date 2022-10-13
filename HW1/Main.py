@@ -16,8 +16,8 @@ class My_UI(QtWidgets.QMainWindow):
         self.comboBox = self.findChild(QtWidgets.QComboBox,"comboBox")
         self.comboBox2 = self.findChild(QtWidgets.QComboBox,"comboBox_2")
         p1 = "./NN_HW1_DataSet/"
-        p2 = os.listdir(p1) #基本題、加分題
-        self.comboBox.addItems(p2)
+        p2 = os.listdir(p1) #加分題、基本題
+        self.comboBox.addItems([p2[1]]) #只完成基本題
         self.comboBox_change()
         # self.comboBox2.addItems(["2Ccircle1","2Circle1","2CloseS","2CloseS2","2CloseS3","2cring","2CS","2Hcircle1","2ring","Perceptron1","Perceptron2"])
         # 取得lr QLineEdit
@@ -36,14 +36,16 @@ class My_UI(QtWidgets.QMainWindow):
         self.label_Valid_Acc = self.findChild(QtWidgets.QLabel,"label_Valid_Acc")
         # 取得label_w
         self.label_w = self.findChild(QtWidgets.QLabel,"label_w")
+        # 取得label_L1
+        self.label_L1 = self.findChild(QtWidgets.QLabel,"label_L1")
         
         self.setWindowIcon(QtGui.QIcon('icon.png'))
         
         # 先初始化label_image
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        plt.xlabel('X1')
-        plt.ylabel('X2')
+        plt.xlabel('x1')
+        plt.ylabel('x2')
         plt.savefig("empty.png")
 
         self.label_image.setPixmap(QtGui.QPixmap("empty.png"))
@@ -97,10 +99,8 @@ class My_UI(QtWidgets.QMainWindow):
         rand_sampling = np.random.choice(range(n_samples),valid_samples,replace=False) #隨機取樣序列
         
         X_valid = X[rand_sampling]
-        # X_train = X
         X_train = np.delete(X, rand_sampling, axis = 0)
         Y_valid = Y[rand_sampling]
-        # Y_train = Y
         Y_train = np.delete(Y, rand_sampling, axis = 0)
         
         w = np.random.rand(n_features + 1)
@@ -137,13 +137,21 @@ class My_UI(QtWidgets.QMainWindow):
 
             if Acc >= float(self.Acc.text()): #達標停止
                 break
-                
+
             epoch += 1
-            
+        #計算Acc
+        wrong = 0
+        for i in range(train_samples):
+            v  = np.dot(best_w,X_train[i].T)
+            if Y_train[i] != self.Hard_limit(v,np.unique(Y)):
+                wrong += 1
+
+        best_Acc = (train_samples - wrong) / train_samples
+
         #計算Valid_Acc
         valid_wrong = 0
         for i in range(valid_samples):
-            v  = np.dot(w,X_valid[i].T)
+            v  = np.dot(best_w,X_valid[i].T)
             if Y_valid[i] != self.Hard_limit(v,np.unique(Y)):
                 valid_wrong += 1
         
@@ -152,39 +160,26 @@ class My_UI(QtWidgets.QMainWindow):
         self.label_Acc.setText("最佳訓練精準度: " + str(best_Acc))
         self.label_Valid_Acc.setText("最佳測試精準度: " + str(valid_Acc))
         self.label_w.setText("最佳解w: " + str(best_w))
-        return best_w
+        self.label_L1.setText("L1 : (" + str(round(best_w[0],8)) + ") + (" + str(round(best_w[1],8)) + ")x1 + (" + str(round(best_w[2],8)) + ")x2 = 0")
+        return best_w,X_train,X_valid,Y_train,Y_valid
 
 
     def Training(self):
         path_to_file = '.\\NN_HW1_DataSet\\' + self.comboBox.currentText() + '\\' + self.comboBox2.currentText()
         data = self.raw_data_process(path_to_file)
 
-        w = self.Training_single_perceptron(int(self.max_epoch.text()),float(self.lr.text()),data)
-        self.Plot(w,data)
+        w,X_train,X_valid,Y_train,Y_valid = self.Training_single_perceptron(int(self.max_epoch.text()),float(self.lr.text()),data)
+        self.Plot(w,data,X_train,X_valid,Y_train,Y_valid)
 
 
-    def Plot(self,w,data):
-        n_samples = data.shape[0]
-        
-        train_samples = round(n_samples / 3 * 2);
-        valid_samples = n_samples - train_samples;
-        
-        X = np.concatenate([-1 * np.ones((n_samples, 1)),data[:,:-1]], axis=1)    
-        Y = data[:,2]
-        
-        rand_sampling = np.random.choice(range(n_samples),valid_samples,replace=False) #隨機取樣序列
-        
-        X_valid = X[rand_sampling]
-        X_train = np.delete(X, rand_sampling, axis = 0)
-        Y_valid = Y[rand_sampling]
-        Y_train = np.delete(Y, rand_sampling, axis = 0)
+    def Plot(self,w,data,X_train,X_valid,Y_train,Y_valid):
 
-        classes = np.unique(Y)
+        classes = np.unique(data[:,2])
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        plt.xlabel('X1')
-        plt.ylabel('X2')
+        plt.xlabel('x1')
+        plt.ylabel('x2')
 
         #繪製訓練資料
         for c in range(len(classes)):
@@ -196,15 +191,15 @@ class My_UI(QtWidgets.QMainWindow):
         #取兩點畫線 w0*-1 + w1x1 + w2x2 = 0; x1 = (w0 - w2x2)/w1 ; x2 = (w0 - w1x1)/w2;
         p1 = [0,(w[0] - w[1]*0)/w[2]]
         p2 = [(w[0] - w[2]*0)/w[1],0]
-        plt.axline(p1,p2,label="w1",color='black')
+        plt.axline(p1,p2,label="L1",color='black')
         plt.legend(loc = 'best')
         plt.title("Training set")
         plt.savefig('pic1.png')
 
         fig.clf()
         ax = fig.add_subplot(111)
-        plt.xlabel('X1')
-        plt.ylabel('X2')
+        plt.xlabel('x1')
+        plt.ylabel('x2')
         
         #繪製測試資料
         for c in range(len(classes)):
@@ -216,7 +211,7 @@ class My_UI(QtWidgets.QMainWindow):
         #取兩點畫線 w0*-1 + w1x1 + w2x2 = 0; x1 = (w0 - w2x2)/w1 ; x2 = (w0 - w1x1)/w2;
         p1 = [0,(w[0] - w[1]*0)/w[2]]
         p2 = [(w[0] - w[2]*0)/w[1],0]
-        plt.axline(p1,p2,label="w1",color='black')
+        plt.axline(p1,p2,label="L1",color='black')
         plt.legend(loc = 'best')
         plt.title("Validation Set")
         plt.savefig('pic2.png')
