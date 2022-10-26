@@ -50,9 +50,9 @@ class MyRBFN(object):
         return ans
 
     def predict(self, x):
-        ans = self.calculate(x)
-        predictions = np.dot(ans, self.weights)
-        return predictions
+        phi_of_x = self.calculate(x)
+        F_of_x = np.dot(phi_of_x, self.weights)
+        return F_of_x
 
     def training(self,x,y,epoch):
         #選出中心點
