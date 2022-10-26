@@ -4,14 +4,10 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import PyQt5
 from PyQt5 import QtWidgets, QtGui, uic
+from MyRBFN import MyRBFN
 import math
 import sys
 import os
-
-class RBFN():
-    
-    def rbf(x, centers, variance):
-        return np.exp(-np.linalg.norm(centers - x)**2)
 
 class MyGUI(QtWidgets.QMainWindow):
 
