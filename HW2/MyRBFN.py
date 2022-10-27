@@ -10,7 +10,6 @@ class MyRBFN(object):
         self.centers = None
         
     def basis_function(self,center,data):
-
         return np.exp((- np.linalg.norm(data - center)**2)/2*self.sigma**2)
 
     def K_means(self,x,k):
@@ -43,25 +42,29 @@ class MyRBFN(object):
         return Center,Center_index,dist
 
     def calculate(self,x):
-        ans = np.zeros((len(x), self.h_layers))
+        PHI = np.zeros((len(x), self.h_layers))
         for data_point_arg, data_point in enumerate(x):
             for center_arg, center in enumerate(self.centers):
-                ans[data_point_arg, center_arg] = self.basis_function(center, data_point)
-        return ans
+                PHI[data_point_arg, center_arg] = self.basis_function(center, data_point)
+        return PHI
+
+    def get_PHI_of_x(self,x):
+
+        return
 
     def predict(self, x):
-        phi_of_x = self.calculate(x)
-        F_of_x = np.dot(phi_of_x, self.weights)
+        PHI_of_x = self.get_PHI_of_x(x)
+        F_of_x = np.dot(PHI_of_x, self.weights)
         return F_of_x
 
     def training(self,x,y,epoch):
         #選出中心點
         self.centers,_,_ = self.K_means(x,k = 1)
-        for i in range(epoch):
-            #計算
-            ans = self.calculate(x)
-            #更新weights
-            self.weights = np.dot(np.linalg.pinv(ans), y)
+
+        #計算
+        ans = self.calculate(x)
+        #更新weights
+        self.weights = np.dot(np.linalg.pinv(ans), y)
     
 if __name__ == "__main__":
     path_to_file = "train4dAll.txt"
