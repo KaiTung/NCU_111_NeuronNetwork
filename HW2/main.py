@@ -27,6 +27,8 @@ class MyGUI(QtWidgets.QMainWindow):
         self.label_image.setPixmap(QtGui.QPixmap("pic.png"))
         self.label_image.setScaledContents(True)
         self.label_image.show()
+        # 宣告一個RBFN model
+        self.RBFN = MyRBFN(h_layers = 20,sigma = 1)
         # Show the GUI
         self.show()
 

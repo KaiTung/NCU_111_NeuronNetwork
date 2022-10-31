@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy import random
+
 
 class MyRBFN(object):
 
@@ -12,34 +14,34 @@ class MyRBFN(object):
     def basis_function(self,center,data):
         return np.exp((- np.linalg.norm(data - center)**2)/2*self.sigma**2)
 
-    def K_means(self,x,k):
-        n=np.size(x,axis=0)
-        dim=np.size(x,axis=1)
-        Center = np.random.random([k,dim])
-        maxiter=50
-        count_iter=0
-        while count_iter<maxiter:
-            count_iter+=1
-            dist=np.array(np.zeros([n,k]))
-            for ic in range(k):
-                c=Center[ic,:]
-                dist[:,ic] = np.linalg.norm(x-c,axis=1)
-            old_Center=np.copy(Center)
-            Center_index=dist.argmin(axis=1)
-            for ic in range(k):
-                mu=np.mean(x[(Center_index==ic),:],axis=0)
-                Center[ic,:]=mu
+    # def K_means(self,x,k):
+    #     n=np.size(x,axis=0)
+    #     dim=np.size(x,axis=1)
+    #     Center = np.random.random([k,dim])
+    #     maxiter=50
+    #     count_iter=0
+    #     while count_iter<maxiter:
+    #         count_iter+=1
+    #         dist=np.array(np.zeros([n,k]))
+    #         for ic in range(k):
+    #             c=Center[ic,:]
+    #             dist[:,ic] = np.linalg.norm(x-c,axis=1)
+    #         old_Center=np.copy(Center)
+    #         Center_index=dist.argmin(axis=1)
+    #         for ic in range(k):
+    #             mu=np.mean(x[(Center_index==ic),:],axis=0)
+    #             Center[ic,:]=mu
              
-            th=np.linalg.norm(Center-old_Center)          
-            if th<np.spacing(1):
-                break
+    #         th=np.linalg.norm(Center-old_Center)          
+    #         if th<np.spacing(1):
+    #             break
                 
-        for ic in range(k):
-            c=Center[ic,:]
-            dist[:,ic] = np.linalg.norm(x-c,axis=1)
-        Center_index=dist.argmin(axis=1)
+    #     for ic in range(k):
+    #         c=Center[ic,:]
+    #         dist[:,ic] = np.linalg.norm(x-c,axis=1)
+    #     Center_index=dist.argmin(axis=1)
             
-        return Center,Center_index,dist
+    #     return Center,Center_index,dist
 
     def calculate(self,x):
         PHI = np.zeros((len(x), self.h_layers))
@@ -48,18 +50,19 @@ class MyRBFN(object):
                 PHI[data_point_arg, center_arg] = self.basis_function(center, data_point)
         return PHI
 
-    def get_PHI_of_x(self,x):
-
-        return
-
     def predict(self, x):
-        PHI_of_x = self.get_PHI_of_x(x)
+        PHI_of_x = self.calculate(x)
         F_of_x = np.dot(PHI_of_x, self.weights)
         return F_of_x
 
+    def select_centers(self, X):
+        random_args = np.random.choice(len(X), self.h_layers)
+        centers = X[random_args]
+        return centers
+
     def training(self,x,y,epoch):
         #選出中心點
-        self.centers,_,_ = self.K_means(x,k = 1)
+        self.centers = self.select_centers(x)
 
         #計算
         ans = self.calculate(x)
@@ -80,14 +83,16 @@ if __name__ == "__main__":
     x = np.concatenate([1 * np.ones((n_samples, 1)),data[:,:-1]], axis=1)
     y = data[:,n_features-1]
 
-    model = MyRBFN(h_layers=20,sigma=1)
-    model.training(x,y,epoch = 5)
-    pre  = model.predict(x)
+    #宣告model
+    for k in range(30,50):
+        model = MyRBFN(h_layers = k,sigma = 1)
+        model.training(x,y,epoch = 5)
+        pre  = model.predict(x)
 
-    # plotting 1D interpolation
-    plt.plot(y, 'b-', label='real')
-    plt.plot(pre, 'r-', label='fit')
-    plt.legend(loc='upper right')
-    plt.title('Interpolation using a RBFN')
-    plt.show()
+        # plotting 1D interpolation
+        plt.plot(y, 'b-', label='real')
+        plt.plot(pre, 'r-', label='fit')
+        plt.legend(loc='upper right')
+        plt.title('Interpolation using a RBFN,k = {}'.format(k))
+        plt.show()
 
