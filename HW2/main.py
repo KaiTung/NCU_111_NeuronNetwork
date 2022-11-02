@@ -8,6 +8,12 @@ from MyRBFN import MyRBFN
 import math
 import sys
 import os
+class line(object):
+    def __init__(self,x1,x2,y1,y2):
+        self.x1 = x1
+        self.x2 = x2
+        self.y1 = y1
+        self.y2 = y2
 
 class car(object):
     def __init__(self,x = 0,y = 0,theta = 0,phi = 90,b = 3):
@@ -32,13 +38,22 @@ class MyGUI(QtWidgets.QMainWindow):
     def __init__(self):
         super(MyGUI, self).__init__()
         self.ui = uic.loadUi('MyGUI.ui', self)
-         
+        
         #初始化地圖
         self.map=[]
         #讀取&儲存座標點
         with open('軌道座標點.txt','r') as f:
             for i in f.read().splitlines():
                 self.map.append(np.array(i.split(',')).astype(int))
+        temp = self.map[3:]
+        self.lines = [line(temp[0][0],temp[1][0],temp[0][1],temp[1][1]),
+                      line(temp[1][0],temp[2][0],temp[1][1],temp[2][1]),
+                      line(temp[2][0],temp[3][0],temp[2][1],temp[3][1]),
+                      line(temp[3][0],temp[4][0],temp[3][1],temp[4][1]),
+                      line(temp[4][0],temp[5][0],temp[4][1],temp[5][1]),
+                      line(temp[5][0],temp[6][0],temp[5][1],temp[6][1]),
+                      line(temp[6][0],temp[7][0],temp[6][1],temp[7][1]),
+                      line(temp[7][0],temp[8][0],temp[7][1],temp[8][1])]
         #畫布宣告一次就好
         self.fig = plt.figure()
         self.plot_new_graph(0,0,90)
@@ -57,6 +72,12 @@ class MyGUI(QtWidgets.QMainWindow):
         # Show the GUI
         self.show()
 
+    def get_three_distance(self,x,y):
+        left45,front,right45 = 0,0,0
+        return left45,front,right45
+        
+    def inside_outside_detect(self,x,y):
+        return True
     
     def auto_car_move(self):
         self.Mycar
@@ -72,9 +93,8 @@ class MyGUI(QtWidgets.QMainWindow):
         rect = patches.Rectangle((self.map[1][0],self.map[2][1]),self.map[2][0]-self.map[1][0],self.map[1][1]-self.map[2][1],color = 'r')#左下座標,長度,寬度
         ax.add_patch(rect)
         #畫牆壁
-        temp = self.map[3:]
-        for i in range(len(temp)-1): 
-            plt.plot((temp[i][0],temp[i+1][0]),(temp[i][1],temp[i+1][1]),c = 'b')
+        for l in self.lines:
+            plt.plot((l.x1,l.x2),(l.y1,l.y2),c = 'b')
         #畫車
         plt.scatter(x,y,c = 'r')
         circle = patches.Circle((x,y),radius = 3,fill = False)
