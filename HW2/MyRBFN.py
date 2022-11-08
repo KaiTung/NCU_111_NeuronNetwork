@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from numpy import random
 
 
-class MyRBFN(object):
+class MyRBFN():
 
-    def __init__(self,h_layers,sigma):
+    def __init__(self,h_layers=10,sigma=1):
         self.h_layers = h_layers
         self.sigma = sigma
         self.weights = None
@@ -60,7 +60,19 @@ class MyRBFN(object):
         centers = X[random_args]
         return centers
 
-    def training(self,x,y,epoch):
+    def training(self):
+        path_to_file = "train4dAll.txt"
+        data = []
+        with open(path_to_file) as f:
+            for i in f.readlines():
+                i = i.split()
+                data.append(i)
+        data = np.array(data).astype(float)
+
+        n_samples = data.shape[0]
+        n_features = data.shape[1]
+        x = np.concatenate([1 * np.ones((n_samples, 1)),data[:,:-1]], axis=1)
+        y = data[:,n_features-1]
         #選出中心點
         self.centers = self.select_centers(x)
 
@@ -84,9 +96,9 @@ if __name__ == "__main__":
     y = data[:,n_features-1]
 
     #宣告model
-    for k in range(30,50):
+    for k in range(30,31):
         model = MyRBFN(h_layers = k,sigma = 1)
-        model.training(x,y,epoch = 5)
+        model.training()
         pre  = model.predict(x)
 
         # plotting 1D interpolation
@@ -95,4 +107,3 @@ if __name__ == "__main__":
         plt.legend(loc='upper right')
         plt.title('Interpolation using a RBFN,k = {}'.format(k))
         plt.show()
-
