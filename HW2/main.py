@@ -5,9 +5,11 @@ import matplotlib.patches as patches
 import PyQt5
 from PyQt5 import QtWidgets, QtGui, uic
 from MyRBFN import MyRBFN
+from simple_playground import Car,Line2D,Point2D,Playground
 import math
 import sys
 import os
+
 class line(object):
     def __init__(self,x1,x2,y1,y2):
         self.x1 = x1
