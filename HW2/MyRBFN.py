@@ -4,7 +4,7 @@ from numpy import random
 import math
 
 class MyRBFN(object):
-    def __init__(self, hidden_shape, sigma=1.0):
+    def __init__(self, hidden_shape = 40, sigma=1.0):
         self.hidden_shape = hidden_shape
         self.sigma = sigma
         self.centers = None
@@ -21,11 +21,6 @@ class MyRBFN(object):
                         center, data_point)
         return G
 
-    # def select_centers(self, X):
-    #     random_args = np.random.choice(len(X), self.hidden_shape)
-    #     centers = X[random_args]
-    #     return centers
-
     def euclidean_distance(self,x1,x2):
         distance = 0
         for dim in range(len(x1)):
@@ -33,13 +28,13 @@ class MyRBFN(object):
         distance = pow(distance,0.5)
         return distance
 
-    def select_centers(self,x):
-        k = 3
-        S = []
-        # frist kth x as centers
-        for i in range(k):
-            S.append([x[i]])
+    def cmp_list(self,l1,l2):
+        for i in range(len(l1)):
+            for j in range(len(l1[i])):
+                if l1[i][j] != l2[i][j]:return False
+        return True
 
+    def select_centers(self,x,k=3):
         z = []
         for i in range(k):
             z.append(x[i])
@@ -47,6 +42,12 @@ class MyRBFN(object):
         done = 1
         last_z = []
         while done:
+
+            S = []
+            # frist kth x as centers
+            for i in range(k):
+                S.append([x[i]])
+
             last_z = z[:]
             #clustering
             for x_i in x:
@@ -59,16 +60,16 @@ class MyRBFN(object):
             #update z
             for i in range(len(z)):
                 z[i] = sum(S[i]) / len(S[i])
-            print("z={}".format(z))
-
-            if last_z == z:
+            # print("z = {}".format(z))
+            if self.cmp_list(last_z,z):
                 done = 0
-                print("DONE")
+                # print("DONE")
+
         return z
 
-
-    def fit(self, X, Y):
-        self.centers = self.select_centers(X)
+    def fit(self,k):
+        X,Y = open_file()
+        self.centers = self.select_centers(X,k)
         G = self.calculate_interpolation_matrix(X)
         self.weights = np.dot(np.linalg.pinv(G), Y)
 
@@ -77,8 +78,7 @@ class MyRBFN(object):
         predictions = np.dot(G, self.weights)
         return predictions
 
-if __name__ == "__main__":
-
+def open_file():
     path_to_file = "train4dAll.txt"
     data = []
     with open(path_to_file) as f:
@@ -91,16 +91,21 @@ if __name__ == "__main__":
     # x = np.concatenate([1 * np.ones((n_samples, 1)),data[:,:-1]], axis=1)
     x = data[:,:-1]
     y = data[:,n_features-1]
+    return x,y
 
+if __name__ == "__main__":
+    x,y = open_file()
     # fitting RBF-Network with data
-    model = MyRBFN(hidden_shape=10, sigma=1.)
-    model.fit(x, y)
-    y_pred = model.predict(x)
-    # print(y_pred)
-    # plotting 1D interpolation
-    # plt.plot(y, 'b-', label='real')
-    # plt.plot(y_pred, 'r-', label='fit')
-    # plt.legend(loc='upper right')
-    # plt.title('Interpolation using a RBFN')
-    # plt.show()
+    model = MyRBFN(hidden_shape=50, sigma=1.)
+    for i in range(30,31):
+        model.fit(k=i)
+        y_pred = []
+        for xi in x:
+            y_pred.append(model.predict([xi]))
+        # plotting 1D interpolation
+        plt.plot(y, 'b-', label='real')
+        plt.plot(y_pred, 'r-', label='fit')
+        plt.legend(loc='upper right')
+        plt.title('RBFN k = {}'.format(i))
+        plt.show()
         

@@ -48,8 +48,8 @@ class Car():
             return Point2D(self.xpos, self.ypos) + left_point
 
         elif point == 'front':
-            fx = m.cos(self.angle/180*m.pi)*self.radius+self.xpos
-            fy = m.sin(self.angle/180*m.pi)*self.radius+self.ypos
+            fx = m.cos(self.angle/180*m.pi)*self.radius/2+self.xpos
+            fy = m.sin(self.angle/180*m.pi)*self.radius/2+self.ypos
             return Point2D(fx, fy)
         else:
             return Point2D(self.xpos, self.ypos)

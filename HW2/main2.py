@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import PyQt5
 from PyQt5 import QtWidgets, QtGui, uic
-from MyRBFN import MyRBFN
 from simple_playground_copy import Car,Line2D,Point2D,Playground
 import math
 import sys
@@ -17,6 +16,7 @@ class MyGUI(QtWidgets.QMainWindow):
         self.ui = uic.loadUi('MyGUI.ui', self)
         self.fig = plt.figure()
         self.p = Playground()
+        self.p.RBFN.fit(k=40)
         # 取得label_image
         self.label_image = self.findChild(QtWidgets.QLabel,"label_image")
         self.label_image.setPixmap(QtGui.QPixmap("pic.png"))
@@ -28,61 +28,45 @@ class MyGUI(QtWidgets.QMainWindow):
         # Show the GUI
         self.show()
 
-    def open_file(self):
-        path_to_file = "train4dAll.txt"
-        data = []
-        with open(path_to_file) as f:
-            for i in f.readlines():
-                i = i.split()
-                data.append(i)
-        data = np.array(data).astype(float)
-        n_features = data.shape[1]
-        x = data[:,:-1]
-        y = data[:,n_features-1]
-        return x,y
-
     def run(self):
         # use example, select random actions until gameover
         state = self.p.reset()
 
-        x,y = self.open_file()
         # fitting RBF-Network with data
-        model = MyRBFN(hidden_shape=10, sigma=1.)
-        model.fit(x, y)
 
         while not self.p.done:
-            self.plot_new_graph()
+            # self.plot_new_graph()
             # print every state and position of the car
-            # print(state, p.car.getPosition('center'))
+            print("state={},center={},action={}".format(state, self.p.car.getPosition('center'),self.p.RBFN.predict([state])))
 
             # select action randomly
             # you can predict your action according to the state here
             # action = p.predictAction(state)
-            action = model.predict([state])
+            action = self.p.RBFN.predict([state])
             # action = model.predict(state)
             # take action
             state = self.p.step(action)
         print("="*10,"DONE","="*10)
         
-    def plot_new_graph(self):
+    # def plot_new_graph(self):
         
-        ax = self.fig.add_subplot(111)
-        #畫起點
-        plt.plot((-6,6),(0,0),c = "r")
-        #畫終點線
-        rect = patches.Rectangle((self.map[1][0],self.map[2][1]),self.map[2][0]-self.map[1][0],self.map[1][1]-self.map[2][1],color = 'r')#左下座標,長度,寬度
-        ax.add_patch(rect)
-        #畫牆壁
-        for l in self.lines:
-            plt.plot((l.x1,l.x2),(l.y1,l.y2),c = 'b')
-        #畫車
-        plt.scatter(self.p.car.xpos,self.p.car.ypos,c = 'r')
-        circle = patches.Circle((self.p.car.xpos,self.p.car.ypos),radius = 3,fill = False)
-        ax.add_patch(circle)
+    #     ax = self.fig.add_subplot(111)
+    #     #畫起點
+    #     plt.plot((-6,6),(0,0),c = "r")
+    #     #畫終點線
+    #     rect = patches.Rectangle((self.map[1][0],self.map[2][1]),self.map[2][0]-self.map[1][0],self.map[1][1]-self.map[2][1],color = 'r')#左下座標,長度,寬度
+    #     ax.add_patch(rect)
+    #     #畫牆壁
+    #     for l in self.lines:
+    #         plt.plot((l.p1.x,l.p2.x),(l.p1.y,l.p2.y),c = 'b')
+    #     #畫車
+    #     plt.scatter(self.p.car.xpos,self.p.car.ypos,c = 'r')
+    #     circle = patches.Circle((self.p.car.xpos,self.p.car.ypos),radius = 3,fill = False)
+    #     ax.add_patch(circle)
 
-        #更新畫面
-        self.label_image.setPixmap(QtGui.QPixmap("pic.png"))
-        plt.clf()
+    #     #更新畫面
+    #     self.label_image.setPixmap(QtGui.QPixmap("pic.png"))
+    #     plt.clf()
         
 
 def main():

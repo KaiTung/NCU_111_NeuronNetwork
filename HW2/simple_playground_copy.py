@@ -3,39 +3,7 @@ import random as r
 import numpy as np
 from simple_geometry import *
 import matplotlib.pyplot as plt
-
-class MyRBFN(object):
-    def __init__(self, hidden_shape, sigma=1.0):
-        self.hidden_shape = hidden_shape
-        self.sigma = sigma
-        self.centers = None
-        self.weights = None
-
-    def _kernel_function(self, center, data_point):
-        return np.exp(-self.sigma*np.linalg.norm(center-data_point)**2)
-
-    def _calculate_interpolation_matrix(self, X):
-        G = np.zeros((len(X), self.hidden_shape))
-        for data_point_arg, data_point in enumerate(X):
-            for center_arg, center in enumerate(self.centers):
-                G[data_point_arg, center_arg] = self._kernel_function(
-                        center, data_point)
-        return G
-
-    def _select_centers(self, X):
-        random_args = np.random.choice(len(X), self.hidden_shape)
-        centers = X[random_args]
-        return centers
-
-    def fit(self, X, Y):
-        self.centers = self._select_centers(X)
-        G = self._calculate_interpolation_matrix(X)
-        self.weights = np.dot(np.linalg.pinv(G), Y)
-
-    def predict(self, X):
-        G = self._calculate_interpolation_matrix(X)
-        predictions = np.dot(G, self.weights)
-        return predictions
+from MyRBFN import *
 
 class Car():
     def __init__(self) -> None:
@@ -82,8 +50,8 @@ class Car():
             return Point2D(self.xpos, self.ypos) + left_point
 
         elif point == 'front':
-            fx = m.cos(self.angle/180*m.pi)*self.radius+self.xpos
-            fy = m.sin(self.angle/180*m.pi)*self.radius+self.ypos
+            fx = m.cos(self.angle/180*m.pi)*self.radius/2+self.xpos
+            fy = m.sin(self.angle/180*m.pi)*self.radius/2+self.ypos
             return Point2D(fx, fy)
         else:
             return Point2D(self.xpos, self.ypos)
@@ -139,7 +107,8 @@ class Playground():
             Line2D(-6, 0, 6, 0),  # start line
             Line2D(0, 0, 0, -3),  # middle line
         ]
-
+        self.RBFN = MyRBFN()
+        self.RBFN.fit(k = 40)
         self.car = Car()
         self.reset()
         
@@ -188,7 +157,7 @@ class Playground():
             self._setDefaultLine()
 
     def predictAction(self, state):
-        return r.randint(0, self.n_actions-1)
+        return self.RBFN.predict(state)
 
     @property
     def n_actions(self):  # action = [0~num_angles-1]
@@ -331,88 +300,23 @@ class Playground():
         else:
             return self.state
 
-def simple_plot():
-    """
-    simple plot
-    """
-    # 生成画布
-    plt.figure(figsize=(8, 6), dpi=80)
-
-    # 打开交互模式
-    plt.ion()
-
-    # 循环
-    for index in range(100):
-        # 清除原有图像
-        plt.cla()
-
-        # 设定标题等
-        plt.title("动态曲线图")
-        plt.grid(True)
-
-        # 生成测试数据
-        x = np.linspace(-np.pi + 0.1*index, np.pi+0.1*index, 256, endpoint=True)
-        y_cos, y_sin = np.cos(x), np.sin(x)
-
-        # 设置X轴
-        plt.xlabel("X轴")
-        plt.xlim(-4 + 0.1*index, 4 + 0.1*index)
-        plt.xticks(np.linspace(-4 + 0.1*index, 4+0.1*index, 9, endpoint=True))
-
-        # 设置Y轴
-        plt.ylabel("Y轴")
-        plt.ylim(-1.0, 1.0)
-        plt.yticks(np.linspace(-1, 1, 9, endpoint=True))
-
-        # 画两条曲线
-        plt.plot(x, y_cos, "b--", linewidth=2.0, label="cos示例")
-        plt.plot(x, y_sin, "g-", linewidth=2.0, label="sin示例")
-
-        # 设置图例位置,loc可以为[upper, lower, left, right, center]
-        plt.legend(loc="upper left", shadow=True)
-
-        # 暂停
-        plt.pause(0.1)
-
-    # 关闭交互模式
-    plt.ioff()
-
-    # 图形显示
-    plt.show()
-    return
-
 def run_example():
     # use example, select random actions until gameover
     p = Playground()
-    
     state = p.reset()
-    
-    path_to_file = "train4dAll.txt"
-    data = []
-    with open(path_to_file) as f:
-        for i in f.readlines():
-            i = i.split()
-            data.append(i)
-    data = np.array(data).astype(float)
-    n_samples = data.shape[0]
-    n_features = data.shape[1]
-    x = data[:,:-1]
-    y = data[:,n_features-1]
 
-    # fitting RBF-Network with data
-    model = MyRBFN(hidden_shape=5, sigma=1)
-    model.fit(x, y)
-
+    fig = plt.figure()
     while not p.done:
         # print every state and position of the car
-        print("state={},center={},action={}".format(state, p.car.getPosition('center'),model.predict([state])))
-
+        c =  p.car.getPosition('center')
         # select action randomly
         # you can predict your action according to the state here
         # action = p.predictAction(state)
-        action = model.predict([state])
+        action = p.RBFN.predict([state])
+        action *= 10
         # action = model.predict(state)
         # take action
+        print("state={},center={},action={}".format(state, p.car.getPosition('center'),p.RBFN.predict([state])))
         state = p.step(action)
 
 if __name__ == "__main__":
