@@ -1,17 +1,15 @@
 
 import numpy as np
 from numpy import random
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 def main():
-    with open('軌道座標點.txt','r') as f:
-        list = []
-        for i in f.read().splitlines():
-            list.append(i.split(','))
-        print(list)
-
-    for i in list:
-        for j in i:
-            print(j)
+    for i in range(5):
+        plt.xlim([-15,55])
+        plt.ylim([-15,55])
+        # plt.show()
+        plt.savefig("pic")
 
 if __name__ == '__main__':
     main()

@@ -69,11 +69,14 @@ class MyRBFN(object):
 
     def fit(self,k):
         X,Y = open_file()
+        n_samples = X.shape[0]
+        X = np.concatenate([1 * np.ones((n_samples, 1)),X], axis=1) # add bias
         self.centers = self.select_centers(X,k)
         G = self.calculate_interpolation_matrix(X)
         self.weights = np.dot(np.linalg.pinv(G), Y)
 
     def predict(self, X):
+        X = np.concatenate([1 * np.ones((1, 1)),X], axis=1)
         G = self.calculate_interpolation_matrix(X)
         predictions = np.dot(G, self.weights)
         return predictions
