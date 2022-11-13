@@ -341,7 +341,6 @@ def run_example():
     # use example, select random actions until gameover
     p = Playground()
     state = p.reset()
-    no = 0
     while not p.done:
         # print every state and position of the car
         c =  p.car.getPosition('center')
@@ -354,8 +353,7 @@ def run_example():
         # take action
         print("state={},center={},action={}".format(state, p.car.getPosition('center'),p.RBFN.predict([state])))
         state = p.step(action)
-        p.draw_new_graph(no)
-        no += 1
+        p.draw_new_graph()
 
 if __name__ == "__main__":
     run_example()

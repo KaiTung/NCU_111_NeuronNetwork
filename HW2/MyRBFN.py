@@ -11,14 +11,14 @@ class MyRBFN(object):
         self.weights = None
 
     def kernel_function(self, center, data_point):
-        return np.exp(np.linalg.norm(center-data_point)**2/(-2*self.sigma**2))
+        return np.exp(np.linalg.norm(center-data_point)**2/(-2*(self.sigma**2)))
 
     def calculate_interpolation_matrix(self, X):
         G = np.zeros((len(X), self.hidden_shape))
         for data_point_arg, data_point in enumerate(X):
             for center_arg, center in enumerate(self.centers):
-                G[data_point_arg, center_arg] = self.kernel_function(
-                        center, data_point)
+                G[data_point_arg, center_arg] = self.kernel_function(center, data_point)
+        G = np.concatenate([1 * np.ones((len(X), 1)),G], axis=1)
         return G
 
     def euclidean_distance(self,x1,x2):
@@ -70,13 +70,13 @@ class MyRBFN(object):
     def fit(self,k):
         X,Y = open_file()
         n_samples = X.shape[0]
-        X = np.concatenate([1 * np.ones((n_samples, 1)),X], axis=1) # add bias
+        # X = np.concatenate([1 * np.ones((n_samples, 1)),X], axis=1) # add bias
         self.centers = self.select_centers(X,k)
         G = self.calculate_interpolation_matrix(X)
         self.weights = np.dot(np.linalg.pinv(G), Y)
 
     def predict(self, X):
-        X = np.concatenate([1 * np.ones((1, 1)),X], axis=1)
+        # X = np.concatenate([1 * np.ones((1, 1)),X], axis=1)
         G = self.calculate_interpolation_matrix(X)
         predictions = np.dot(G, self.weights)
         return predictions
@@ -99,16 +99,17 @@ def open_file():
 if __name__ == "__main__":
     x,y = open_file()
     # fitting RBF-Network with data
-    model = MyRBFN(hidden_shape=50, sigma=1.)
-    for i in range(30,31):
+    model = MyRBFN(hidden_shape=20, sigma=3)
+    for i in range(20,21):
         model.fit(k=i)
         y_pred = []
         for xi in x:
             y_pred.append(model.predict([xi]))
+            print(xi,model.predict([xi]))
         # plotting 1D interpolation
-        plt.plot(y, 'b-', label='real')
-        plt.plot(y_pred, 'r-', label='fit')
-        plt.legend(loc='upper right')
-        plt.title('RBFN k = {}'.format(i))
-        plt.show()
+        # plt.plot(y, 'b-', label='real')
+        # plt.plot(y_pred, 'r-', label='fit')
+        # plt.legend(loc='upper right')
+        # plt.title('RBFN k = {}'.format(i))
+        # plt.show()
         
