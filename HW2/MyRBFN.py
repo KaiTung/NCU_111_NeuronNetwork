@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy import random
 import math
+from MyKMeans import *
 
 class MyRBFN(object):
     def __init__(self, hidden_shape = 40, sigma=1.0):
@@ -34,44 +35,11 @@ class MyRBFN(object):
                 if l1[i][j] != l2[i][j]:return False
         return True
 
-    def select_centers(self,x,k=3):
-        z = []
-        for i in range(k):
-            z.append(x[i])
-
-        done = 1
-        last_z = []
-        while done:
-
-            S = []
-            # frist kth x as centers
-            for i in range(k):
-                S.append([x[i]])
-
-            last_z = z[:]
-            #clustering
-            for x_i in x:
-                #caculate dis from x to z_i
-                dis = []
-                for z_i in z:
-                    dis.append(self.euclidean_distance(z_i,x_i))
-                #find min dis
-                S[dis.index(min(dis))].append(x_i)
-            #update z
-            for i in range(len(z)):
-                z[i] = sum(S[i]) / len(S[i])
-            # print("z = {}".format(z))
-            if self.cmp_list(last_z,z):
-                done = 0
-                # print("DONE")
-
-        return z
-
     def fit(self,k):
         X,Y = open_file()
         n_samples = X.shape[0]
         # X = np.concatenate([1 * np.ones((n_samples, 1)),X], axis=1) # add bias
-        self.centers = self.select_centers(X,k)
+        self.centers = select_centers(X,k)
         G = self.calculate_interpolation_matrix(X)
         self.weights = np.dot(np.linalg.pinv(G), Y)
 
