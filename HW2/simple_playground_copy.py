@@ -1,6 +1,5 @@
 import math as m
 import random as r
-import numpy as np
 from simple_geometry import *
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -76,15 +75,12 @@ class Car():
         '''
         car_angle = self.angle/180*m.pi
         wheel_angle = self.wheel_angle/180*m.pi
-        new_x = self.xpos + m.cos(car_angle+wheel_angle) + \
-            m.sin(wheel_angle)*m.cos(car_angle)
-
-        new_y = self.ypos + m.sin(car_angle+wheel_angle) - \
-            m.sin(wheel_angle)*m.cos(car_angle)
+        
+        new_x = self.xpos + m.cos(car_angle+wheel_angle) + m.sin(wheel_angle)*m.sin(car_angle)
+        new_y = self.ypos + m.sin(car_angle+wheel_angle) - m.sin(wheel_angle)*m.cos(car_angle)
 
         # seem as a car
-        new_angle = (car_angle - m.asin(2*m.sin(wheel_angle) /
-                     (self.radius*1.5)))*180/m.pi
+        new_angle = (car_angle - m.asin(2*m.sin(wheel_angle) / self.radius))
 
         # seem as a circle
         # new_angle = (car_angle - m.asin(2*m.sin(wheel_angle) /
@@ -97,6 +93,7 @@ class Car():
         self.xpos = new_x
         self.ypos = new_y
         self.setAngle(new_angle)
+        self.setWheelAngle(self.angle)
 
 
 class Playground():
@@ -108,9 +105,6 @@ class Playground():
             Line2D(-6, 0, 6, 0),  # start line
             Line2D(0, 0, 0, -3),  # middle line
         ]
-
-        self.RBFN = MyRBFN()
-        self.RBFN.fit(k = 40)
         self.car = Car()
         self.reset()
         
@@ -284,9 +278,7 @@ class Playground():
         self._checkDoneIntersects()
 
     def calWheelAngleFromAction(self, action):
-        angle = self.car.wheel_min + \
-            action*(self.car.wheel_max-self.car.wheel_min) / \
-            (self.n_actions-1)
+        angle = self.car.wheel_min + action*(self.car.wheel_max-self.car.wheel_min) / (self.n_actions-1)
         return angle
 
     def step(self, action=None):
@@ -303,55 +295,62 @@ class Playground():
             return self.state
 
     def draw_new_graph(self):
-        # plt.clf()
-        ax = plt.figure().add_subplot(111)
-        #畫起點
-        p1 = self.decorate_lines[0].p1
-        p2 = self.decorate_lines[0].p2
-        plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "r")
+        try:
+            # plt.clf()
+            ax = plt.figure().add_subplot(111)
+            #畫起點
+            p1 = self.decorate_lines[0].p1
+            p2 = self.decorate_lines[0].p2
+            plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "r")
 
-        #畫終點線
-        rect = patches.Rectangle((18,37),12,3,color = 'r')#左下座標,長度,寬度
-        ax.add_patch(rect)
+            #畫終點線
+            rect = patches.Rectangle((18,37),12,3,color = 'r')#左下座標,長度,寬度
+            ax.add_patch(rect)
 
-        # 畫牆壁
-        for line in self.lines:
-            p1 = line.p1
-            p2 = line.p2
-            plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "black")
+            # 畫牆壁
+            for line in self.lines:
+                p1 = line.p1
+                p2 = line.p2
+                plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "black")
 
-        # 畫車
-        plt.scatter(self.car.xpos,self.car.ypos,c = 'r')
-        circle = patches.Circle((self.car.xpos,self.car.ypos),radius = 3,fill = False)
-        ax.add_patch(circle)
+            # 畫車
+            plt.scatter(self.car.xpos,self.car.ypos,c = 'r')
+            circle = patches.Circle((self.car.xpos,self.car.ypos),radius = 3,fill = False)
+            ax.add_patch(circle)
 
-        # # 感測器線條(前，右，左)
-        # for position in ['right','front','left']:
-        #     pc = self.car.getPosition()
-        #     p = self.car.getPosition(position)
-        #     plt.plot((pc.x,p.x),(pc.y,p.y),c = "red")
+            # # 感測器線條(前，右，左)
+            p1 = self.car.getPosition("front")
+            p2 = self.front_intersects[0]
+            plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
 
-        plt.xlim([-15,55])
-        plt.ylim([-15,55])
-        plt.savefig("pic.png")
-        plt.close()
+            p1 = self.car.getPosition("right")
+            p2 = self.right_intersects[0]
+            plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
+
+            p1 = self.car.getPosition("left")
+            p2 = self.left_intersects[0]
+            plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
+
+            plt.xlim([-15,55])
+            plt.ylim([-15,55])
+            plt.savefig("pic.png")
+            plt.close()
+        except:
+            plt.close()
+            return
         
-
 def run_example():
     # use example, select random actions until gameover
     p = Playground()
+    model = MyRBFN(hidden_shape= 50,sigma=5,k=10)
+    model.fit()
     state = p.reset()
     while not p.done:
-        # print every state and position of the car
-        c =  p.car.getPosition('center')
-        # select action randomly
-        # you can predict your action according to the state here
-        # action = p.predictAction(state)
-        action = p.RBFN.predict([state])
-        action *= 10
-        # action = model.predict(state)
+        action = model.predict([state])
+        # action = int(input("Enter action:"))
         # take action
-        print("state={},center={},action={}".format(state, p.car.getPosition('center'),p.RBFN.predict([state])))
+        print("state={},\ncenter={}\naction={},wheel_angle ={}".format(state, p.car.getPosition('center'),action,p.car.wheel_angle))
+        print("="*15)
         state = p.step(action)
         p.draw_new_graph()
 

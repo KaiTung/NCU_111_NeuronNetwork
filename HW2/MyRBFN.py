@@ -2,14 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy import random
 import math
-from MyKMeans import *
+import MyKMeans as MK
 
 class MyRBFN(object):
-    def __init__(self, hidden_shape = 40, sigma=1.0):
+    def __init__(self, hidden_shape = 50, sigma=1.0,k = 10):
         self.hidden_shape = hidden_shape
         self.sigma = sigma
         self.centers = None
         self.weights = None
+        self.k = k
 
     def kernel_function(self, center, data_point):
         return np.exp(np.linalg.norm(center-data_point)**2/(-2*(self.sigma**2)))
@@ -22,24 +23,9 @@ class MyRBFN(object):
         G = np.concatenate([1 * np.ones((len(X), 1)),G], axis=1)
         return G
 
-    def euclidean_distance(self,x1,x2):
-        distance = 0
-        for dim in range(len(x1)):
-            distance += pow(x1[dim] - x2[dim],2)
-        distance = pow(distance,0.5)
-        return distance
-
-    def cmp_list(self,l1,l2):
-        for i in range(len(l1)):
-            for j in range(len(l1[i])):
-                if l1[i][j] != l2[i][j]:return False
-        return True
-
-    def fit(self,k):
+    def fit(self):
         X,Y = open_file()
-        n_samples = X.shape[0]
-        # X = np.concatenate([1 * np.ones((n_samples, 1)),X], axis=1) # add bias
-        self.centers = select_centers(X,k)
+        self.centers = MK.select_centers(X,self.k)
         G = self.calculate_interpolation_matrix(X)
         self.weights = np.dot(np.linalg.pinv(G), Y)
 
@@ -67,17 +53,14 @@ def open_file():
 if __name__ == "__main__":
     x,y = open_file()
     # fitting RBF-Network with data
-    model = MyRBFN(hidden_shape=20, sigma=3)
-    for i in range(20,21):
-        model.fit(k=i)
-        y_pred = []
-        for xi in x:
-            y_pred.append(model.predict([xi]))
-            print(xi,model.predict([xi]))
-        # plotting 1D interpolation
-        # plt.plot(y, 'b-', label='real')
-        # plt.plot(y_pred, 'r-', label='fit')
-        # plt.legend(loc='upper right')
-        # plt.title('RBFN k = {}'.format(i))
-        # plt.show()
-        
+    p1,p2,p3 = 30, 2, 30
+    model = MyRBFN(hidden_shape=p1, sigma=p2,k = p3)
+    model.fit()
+    y_pred = []
+    for xi in x:
+        y_pred.append(model.predict([xi]))
+    plt.scatter(range(0,1475),y,c ='g')
+    plt.scatter(model.centers,c='R')
+    # plt.scatter(range(0,1475),y_pred , c ="red")
+    plt.title("hidden_shape={}, sigma={},k = {}".format(str(p1),str(p2),str(p3)))
+    plt.show()

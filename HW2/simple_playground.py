@@ -1,6 +1,7 @@
 import math as m
 import random as r
 from simple_geometry import *
+import matplotlib.pyplot as plt
 
 
 class Car():
@@ -74,14 +75,13 @@ class Car():
         car_angle = self.angle/180*m.pi
         wheel_angle = self.wheel_angle/180*m.pi
         new_x = self.xpos + m.cos(car_angle+wheel_angle) + \
-            m.sin(wheel_angle)*m.cos(car_angle)
+            m.sin(wheel_angle)*m.sin(car_angle)
 
         new_y = self.ypos + m.sin(car_angle+wheel_angle) - \
             m.sin(wheel_angle)*m.cos(car_angle)
 
         # seem as a car
-        new_angle = (car_angle - m.asin(2*m.sin(wheel_angle) /
-                     (self.radius*1.5)))*180/m.pi
+        new_angle = (car_angle - m.asin(2*m.sin(wheel_angle) / self.radius))
 
         # seem as a circle
         # new_angle = (car_angle - m.asin(2*m.sin(wheel_angle) /
@@ -100,7 +100,7 @@ class Playground():
     def __init__(self):
         # read path lines
         self.path_line_filename = "軌道座標點.txt"
-        self._readPathLines()
+        self._setDefaultLine()
         self.decorate_lines = [
             Line2D(-6, 0, 6, 0),  # start line
             Line2D(0, 0, 0, -3),  # middle line
@@ -301,19 +301,18 @@ class Playground():
 def run_example():
     # use example, select random actions until gameover
     p = Playground()
-
+    # figure, ax = plt.subplots()
+    
     state = p.reset()
     while not p.done:
         # print every state and position of the car
         print(state, p.car.getPosition('center'))
-
         # select action randomly
         # you can predict your action according to the state here
-        action = p.predictAction(state)
-
+        # action = p.predictAction(state)
+        action = 0
         # take action
         state = p.step(action)
-
-
+    
 if __name__ == "__main__":
     run_example()

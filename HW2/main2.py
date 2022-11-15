@@ -5,7 +5,7 @@ import matplotlib.patches as patches
 import PyQt5
 from PyQt5 import QtWidgets, QtGui, uic
 from simple_playground_copy import Car,Line2D,Point2D,Playground
-import math
+from MyRBFN import *
 import sys
 import os
 
@@ -15,7 +15,8 @@ class MyGUI(QtWidgets.QMainWindow):
         super(MyGUI, self).__init__()
         self.ui = uic.loadUi('MyGUI.ui', self)
         self.p = Playground()
-        self.p.RBFN.fit(k=40)
+        self.RBFN = MyRBFN(hidden_shape = 50,sigma = 2,k = 40)
+        self.RBFN.fit()
         # 取得label_image
         self.label_image = self.findChild(QtWidgets.QLabel,"label_image")
         self.label_image.setScaledContents(True)
@@ -33,22 +34,19 @@ class MyGUI(QtWidgets.QMainWindow):
     def run(self):
         # use example, select random actions until gameover
         state = self.p.reset()
+        self.p.draw_new_graph()
+        self.show_new_graph()
+        plt.pause(1)
         # fitting RBF-Network with data
         while not self.p.done:
-            # print every state and position of the car
-            c =  self.p.car.getPosition('center')
-            # select action randomly
-            # you can predict your action according to the state here
-            # action = p.predictAction(state)
-            action = self.p.RBFN.predict([state])
-            action *= 10
-            # action = model.predict(state)
-            # take action
-            print("state={},center={},action={}".format(state, self.p.car.getPosition('center'),self.p.RBFN.predict([state])))
+            # action = self.RBFN.predict([state])
+            action = 0
+            print("state={},center={},action={}".format(state, self.p.car.getPosition('center'),action))
             state = self.p.step(action)
             self.p.draw_new_graph()
             self.show_new_graph()
-
+            plt.pause(1)
+        print("===DONE===")
         
     def show_new_graph(self):
         self.label_image.setPixmap(QtGui.QPixmap("pic.png"))
