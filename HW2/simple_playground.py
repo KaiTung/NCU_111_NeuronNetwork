@@ -309,8 +309,7 @@ def run_example():
         print(state, p.car.getPosition('center'))
         # select action randomly
         # you can predict your action according to the state here
-        # action = p.predictAction(state)
-        action = 0
+        action = p.predictAction(state)
         # take action
         state = p.step(action)
     

@@ -36,7 +36,7 @@ class MyRBFN(object):
         return predictions
 
 def open_file():
-    path_to_file = "train4dAll.txt"
+    path_to_file = "train4dAll_test.txt"
     data = []
     with open(path_to_file) as f:
         for i in f.readlines():
@@ -53,14 +53,14 @@ def open_file():
 if __name__ == "__main__":
     x,y = open_file()
     # fitting RBF-Network with data
-    p1,p2,p3 = 30, 2, 30
+    p1,p2,p3 = 58, 1, 58
     model = MyRBFN(hidden_shape=p1, sigma=p2,k = p3)
     model.fit()
     y_pred = []
     for xi in x:
         y_pred.append(model.predict([xi]))
-    plt.scatter(range(0,1475),y,c ='g')
-    plt.scatter(model.centers,c='R')
-    # plt.scatter(range(0,1475),y_pred , c ="red")
+    plt.scatter(range(0,len(x)),y,c ='g')
+    # plt.scatter(model.centers,c='R')
+    plt.scatter(range(0,len(x)),y_pred , c ="red")
     plt.title("hidden_shape={}, sigma={},k = {}".format(str(p1),str(p2),str(p3)))
     plt.show()

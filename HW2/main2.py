@@ -15,7 +15,7 @@ class MyGUI(QtWidgets.QMainWindow):
         super(MyGUI, self).__init__()
         self.ui = uic.loadUi('MyGUI.ui', self)
         self.p = Playground()
-        self.RBFN = MyRBFN(hidden_shape = 50,sigma = 2,k = 40)
+        self.RBFN = MyRBFN(hidden_shape = 58,sigma = 1,k = 58)
         self.RBFN.fit()
         # 取得label_image
         self.label_image = self.findChild(QtWidgets.QLabel,"label_image")
@@ -39,13 +39,12 @@ class MyGUI(QtWidgets.QMainWindow):
         plt.pause(1)
         # fitting RBF-Network with data
         while not self.p.done:
-            # action = self.RBFN.predict([state])
-            action = 0
+            action = self.RBFN.predict([state])[0]
             print("state={},center={},action={}".format(state, self.p.car.getPosition('center'),action))
             state = self.p.step(action)
             self.p.draw_new_graph()
             self.show_new_graph()
-            plt.pause(1)
+            plt.pause(0.5)
         print("===DONE===")
         
     def show_new_graph(self):

@@ -27,7 +27,8 @@ class Car():
 
         xini_range = (self.xini_max - self.xini_min - self.radius)
         left_xpos = self.xini_min + self.radius//2
-        self.xpos = r.random()*xini_range + left_xpos  # random x pos [-3, 3]
+        # self.xpos = r.random()*xini_range + left_xpos  # random x pos [-3, 3]
+        self.xpos = 0
         self.ypos = 0
 
     def setWheelAngle(self, angle):
@@ -67,6 +68,7 @@ class Car():
         new_angle %= 360
         if new_angle > self.angle_max:
             new_angle -= self.angle_max - self.angle_min
+
         self.angle = new_angle
 
     def tick(self):
@@ -80,7 +82,7 @@ class Car():
         new_y = self.ypos + m.sin(car_angle+wheel_angle) - m.sin(wheel_angle)*m.cos(car_angle)
 
         # seem as a car
-        new_angle = (car_angle - m.asin(2*m.sin(wheel_angle) / self.radius))
+        new_angle = (car_angle - m.asin(2*m.sin(wheel_angle) / self.radius))*180 / m.pi
 
         # seem as a circle
         # new_angle = (car_angle - m.asin(2*m.sin(wheel_angle) /
@@ -93,7 +95,7 @@ class Car():
         self.xpos = new_x
         self.ypos = new_y
         self.setAngle(new_angle)
-        self.setWheelAngle(self.angle)
+        # self.setWheelAngle(self.angle)
 
 
 class Playground():
@@ -278,13 +280,14 @@ class Playground():
         self._checkDoneIntersects()
 
     def calWheelAngleFromAction(self, action):
-        angle = self.car.wheel_min + action*(self.car.wheel_max-self.car.wheel_min) / (self.n_actions-1)
+        angle = self.car.wheel_min + action * (self.car.wheel_max-self.car.wheel_min) / (self.n_actions-1)
         return angle
 
     def step(self, action=None):
-        if action:
-            angle = self.calWheelAngleFromAction(action=action)
-            self.car.setWheelAngle(angle)
+        # if action:
+            # angle = self.calWheelAngleFromAction(action=action)
+        angle = action
+        self.car.setWheelAngle(angle)
 
         if not self.done:
             self.car.tick()
@@ -342,12 +345,12 @@ class Playground():
 def run_example():
     # use example, select random actions until gameover
     p = Playground()
-    model = MyRBFN(hidden_shape= 50,sigma=5,k=10)
+    model = MyRBFN(hidden_shape= 58,sigma=1,k=58)
     model.fit()
     state = p.reset()
     while not p.done:
-        action = model.predict([state])
-        # action = int(input("Enter action:"))
+        action = model.predict([state])[0]
+        # action = 0
         # take action
         print("state={},\ncenter={}\naction={},wheel_angle ={}".format(state, p.car.getPosition('center'),action,p.car.wheel_angle))
         print("="*15)

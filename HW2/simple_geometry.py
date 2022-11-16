@@ -39,7 +39,7 @@ class Point2D():
 
     def distToPoint2D(self, p2: Point2D):
         diff = self - p2
-        return diff.length
+        return diff.length +3
 
     def distToLine2D(self, line: Line2D):
         p1 = line.p1
