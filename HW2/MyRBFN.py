@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import MyKMeans as MK
 
 class MyRBFN(object):
-    def __init__(self, hidden_shape = 1475, sigma=2,k = 58):
+    def __init__(self, hidden_shape , sigma,k):
         self.hidden_shape = hidden_shape
         self.sigma = sigma
         self.centers = None
@@ -18,7 +18,7 @@ class MyRBFN(object):
         return np.exp(np.linalg.norm(center-data_point)**2/(-2*(self.sigma**2)))
 
     #虛擬反置矩陣
-    def calculate_interpolation_matrix(self, X):
+    def calculate_virtual_inversion_matrix(self, X):
         phi_of_x = np.zeros((len(X), self.hidden_shape))
         for data_point_arg, data_point in enumerate(X):
             for center_arg, center in enumerate(self.centers):
@@ -28,11 +28,11 @@ class MyRBFN(object):
 
     def fit(self):
         self.centers = MK.select_centers(self.x,self.k)
-        phi_of_x = self.calculate_interpolation_matrix(self.x)
+        phi_of_x = self.calculate_virtual_inversion_matrix(self.x)
         self.weights = np.dot(np.linalg.pinv(phi_of_x), self.y)
 
     def predict(self, X):
-        phi_of_x = self.calculate_interpolation_matrix(X)
+        phi_of_x = self.calculate_virtual_inversion_matrix(X)
         predictions = np.dot(phi_of_x, self.weights)
         return predictions
 
