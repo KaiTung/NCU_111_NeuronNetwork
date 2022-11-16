@@ -27,8 +27,7 @@ class Car():
 
         xini_range = (self.xini_max - self.xini_min - self.radius)
         left_xpos = self.xini_min + self.radius//2
-        # self.xpos = r.random()*xini_range + left_xpos  # random x pos [-3, 3]
-        self.xpos = 0
+        self.xpos = r.random()*xini_range + left_xpos  # random x pos [-3, 3]
         self.ypos = 0
 
     def setWheelAngle(self, angle):
@@ -264,7 +263,6 @@ class Playground():
     def reset(self):
         self.done = False
         self.car.reset()
-
         if self.car_init_angle and self.car_init_pos:
             self.setCarPosAndAngle(self.car_init_pos, self.car_init_angle)
 
@@ -284,10 +282,9 @@ class Playground():
         return angle
 
     def step(self, action=None):
-        # if action:
-            # angle = self.calWheelAngleFromAction(action=action)
-        angle = action
-        self.car.setWheelAngle(angle)
+        if action:
+            angle = self.calWheelAngleFromAction(action=action)
+            self.car.setWheelAngle(action)
 
         if not self.done:
             self.car.tick()
@@ -297,17 +294,17 @@ class Playground():
         else:
             return self.state
 
-    def draw_new_graph(self):
+    def draw_new_graph(self,init = 1):
         try:
             # plt.clf()
             ax = plt.figure().add_subplot(111)
             #畫起點
             p1 = self.decorate_lines[0].p1
             p2 = self.decorate_lines[0].p2
-            plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "r")
+            plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "blue")
 
             #畫終點線
-            rect = patches.Rectangle((18,37),12,3,color = 'r')#左下座標,長度,寬度
+            rect = patches.Rectangle((18,37),12,3,color = 'blue')#左下座標,長度,寬度
             ax.add_patch(rect)
 
             # 畫牆壁
@@ -316,23 +313,24 @@ class Playground():
                 p2 = line.p2
                 plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "black")
 
-            # 畫車
-            plt.scatter(self.car.xpos,self.car.ypos,c = 'r')
-            circle = patches.Circle((self.car.xpos,self.car.ypos),radius = 3,fill = False)
-            ax.add_patch(circle)
+            if init:
+                # 畫車
+                plt.scatter(self.car.xpos,self.car.ypos,c = 'r')
+                circle = patches.Circle((self.car.xpos,self.car.ypos),radius = 3,fill = False)
+                ax.add_patch(circle)
 
-            # # 感測器線條(前，右，左)
-            p1 = self.car.getPosition("front")
-            p2 = self.front_intersects[0]
-            plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
+                # # 感測器線條(前，右，左)
+                p1 = self.car.getPosition("front")
+                p2 = self.front_intersects[0]
+                plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
 
-            p1 = self.car.getPosition("right")
-            p2 = self.right_intersects[0]
-            plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
+                p1 = self.car.getPosition("right")
+                p2 = self.right_intersects[0]
+                plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
 
-            p1 = self.car.getPosition("left")
-            p2 = self.left_intersects[0]
-            plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
+                p1 = self.car.getPosition("left")
+                p2 = self.left_intersects[0]
+                plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
 
             plt.xlim([-15,55])
             plt.ylim([-15,55])
@@ -346,6 +344,7 @@ def run_example():
     # use example, select random actions until gameover
     p = Playground()
     model = MyRBFN(hidden_shape= 58,sigma=1,k=58)
+    model.read_training_data("train4dAll.txt")
     model.fit()
     state = p.reset()
     while not p.done:
