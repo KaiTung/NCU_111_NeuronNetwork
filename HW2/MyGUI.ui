@@ -135,7 +135,7 @@
           <item>
            <widget class="QLabel" name="label_layers">
             <property name="text">
-             <string>隱藏層數量(預測58)</string>
+             <string>隱藏層數量(預設60)</string>
             </property>
            </widget>
           </item>
@@ -145,7 +145,7 @@
              <enum>Qt::ClickFocus</enum>
             </property>
             <property name="text">
-             <string>58</string>
+             <string>60</string>
             </property>
            </widget>
           </item>
@@ -158,7 +158,7 @@
              <number>200</number>
             </property>
             <property name="value">
-             <number>58</number>
+             <number>60</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -168,7 +168,7 @@
           <item>
            <widget class="QLabel" name="label_k">
             <property name="text">
-             <string>K-means 之 K(預設58)</string>
+             <string>K-means 之 K(預設20)</string>
             </property>
            </widget>
           </item>
@@ -178,7 +178,7 @@
              <enum>Qt::ClickFocus</enum>
             </property>
             <property name="text">
-             <string>58</string>
+             <string>20</string>
             </property>
            </widget>
           </item>
@@ -188,10 +188,10 @@
              <number>1</number>
             </property>
             <property name="maximum">
-             <number>200</number>
+             <number>100</number>
             </property>
             <property name="value">
-             <number>58</number>
+             <number>20</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -201,7 +201,7 @@
           <item>
            <widget class="QLabel" name="label_sigma">
             <property name="text">
-             <string>sigma(預設2)</string>
+             <string>sigma(預設4)</string>
             </property>
            </widget>
           </item>
@@ -211,7 +211,7 @@
              <enum>Qt::ClickFocus</enum>
             </property>
             <property name="text">
-             <string>2</string>
+             <string>4</string>
             </property>
            </widget>
           </item>
@@ -224,7 +224,7 @@
              <number>20</number>
             </property>
             <property name="value">
-             <number>2</number>
+             <number>4</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>

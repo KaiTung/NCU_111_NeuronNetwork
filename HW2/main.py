@@ -8,14 +8,20 @@ import os
 
 class Thread(QThread):
 
-  def __init__(self,RBFN,pushButton_GO,pushButton_Train):
+  def __init__(self,RBFN,pushButton_GO,pushButton_Train,label_layers):
     super(Thread, self).__init__()
     self.RBFN = RBFN
     self.pushButton_GO = pushButton_GO
     self.pushButton_Train = pushButton_Train
+    self.label_layers = label_layers
 
   def run(self):
-    self.RBFN.fit()
+    try:
+        self.RBFN.fit()
+        self.label_layers.setText("隱藏層數量(預設60)")
+    except Exception as e:
+        print(e)
+        self.label_layers.setText("隱藏層數量(預設60)(錯誤:隱藏層數量請>=K)")
     self.pushButton_GO.setEnabled(True)
     self.pushButton_Train.setEnabled(True)
 
@@ -31,6 +37,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.label_image.setScaledContents(True)
         # 取得label_sensor
         self.label_sensor = self.findChild(QtWidgets.QLabel,"label_sensor")
+
+        self.label_layers = self.findChild(QtWidgets.QLabel,"label_layers")
 
         # 取得參數設定lineEdit
         self.lineEdit_layers = self.findChild(QtWidgets.QLineEdit,"lineEdit_layers")
@@ -76,24 +84,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEdit_sigma.setText(str(self.horizontalSlider_sigma.value()))
 
     def lineEdit_change(self):
-        self.horizontalSlider_layers.setValue(int(self.lineEdit_layers.text()))
-        self.horizontalSlider_k.setValue(int(self.lineEdit_k.text()))
-        self.horizontalSlider_sigma.setValue(int(self.lineEdit_sigma.text()))
+        if self.lineEdit_layers.text()!="" and self.lineEdit_k.text()!="" and self.lineEdit_sigma.text()!="":
+            self.horizontalSlider_layers.setValue(int(self.lineEdit_layers.text()))
+            self.horizontalSlider_k.setValue(int(self.lineEdit_k.text()))
+            self.horizontalSlider_sigma.setValue(int(self.lineEdit_sigma.text()))
 
     def model_fit(self):
         #更改參數並重新訓練
-        QtWidgets.QApplication.processEvents()
-        LAYERS = int(self.lineEdit_layers.text())
-        SIGMA = int(self.lineEdit_sigma.text())
-        K = int(self.lineEdit_k.text())
-        PATH_TO_FILE = self.comboBox_file.currentText()
-        print("layers={} k={} sigma={} file={}".format(LAYERS,K,SIGMA,PATH_TO_FILE))
-        self.RBFN.set_parameter(h = LAYERS,s = SIGMA,k = K)
-        self.RBFN.read_training_data(PATH_TO_FILE)
         try:
+            LAYERS = int(self.lineEdit_layers.text())
+            SIGMA = int(self.lineEdit_sigma.text())
+            K = int(self.lineEdit_k.text())
+            PATH_TO_FILE = self.comboBox_file.currentText()
+            print("layers={} k={} sigma={} file={}".format(LAYERS,K,SIGMA,PATH_TO_FILE))
+            self.RBFN.set_parameter(h = LAYERS,s = SIGMA,k = K)
+            self.RBFN.read_training_data(PATH_TO_FILE)
+
             self.pushButton_GO.setEnabled(False)
             self.pushButton_Train.setEnabled(False)
-            self.thread = Thread(self.RBFN,self.pushButton_GO,self.pushButton_Train)
+            self.thread = Thread(self.RBFN,self.pushButton_GO,self.pushButton_Train,self.label_layers)
             self.thread.start()
         except Exception as e:
             print(e)
@@ -110,25 +119,28 @@ class MainWindow(QtWidgets.QMainWindow):
         while not self.p.done:
             if self.comboBox_file.currentText() == "train4dAll.txt":
                 action = self.RBFN.predict([state])[0]
+                path_record_4D += "{:<} {:<} {:<} {:<}\n".format(round(state[0],7),round(state[1],7),round(state[2],7),round(action,7))
             elif self.comboBox_file.currentText() == "train6dAll.txt":
                 c = self.p.car.getPosition('center')
                 state_6d = np.concatenate((np.array([c.x,c.y]),np.array(state)),axis=0)
                 action = self.RBFN.predict([state_6d])[0]
+                path_record_6D += "{:<} {:<} {:<} {:<} {:<} {:<}\n".format(round(self.p.car.getPosition().x,7),round(self.p.car.getPosition().y,7),round(state[0],7),round(state[1],7),round(state[2],7),round(action,7))
             # print("state={},center={},action={}".format(state, self.p.car.getPosition('center'),action))
             state = self.p.step(action)
             self.p.draw_new_graph()
             self.show_new_graph()
-            self.label_sensor.setText("感測器距離(取至後三位): 前{} 右{} 左{}".format(round(state[0],3),round(state[1],3),round(state[2],3)))
-            path_record_6D += "{:<} {:<} {:<} {:<} {:<} {:<}\n".format(round(self.p.car.getPosition().x,7),round(self.p.car.getPosition().y,7),round(state[0],7),round(state[1],7),round(state[2],7),round(action,7))
-            path_record_4D += "{:<} {:<} {:<} {:<}\n".format(round(state[0],7),round(state[1],7),round(state[2],7),round(action,7))
+            text = "感測器距離(取至後三位): 前{:<5} 右{:<5} 左{:<5}".format(round(state[0],3),round(state[1],3),round(state[2],3))
+            self.label_sensor.setText(text)
             plt.pause(0.02)
         print("===DONE===")
 
         #寫入路徑紀錄
-        with open("track6D.txt",'w') as f:
-            f.write(path_record_6D)
-        with open("track4D.txt",'w') as f:
-            f.write(path_record_4D)
+        if self.comboBox_file.currentText() == "train6dAll.txt":
+            with open("track6D.txt",'w') as f:
+                f.write(path_record_6D)
+        elif self.comboBox_file.currentText() == "train4dAll.txt":
+            with open("track4D.txt",'w') as f:
+                f.write(path_record_4D)
         
     def show_new_graph(self):
         self.label_image.setPixmap(QtGui.QPixmap("pic.png"))

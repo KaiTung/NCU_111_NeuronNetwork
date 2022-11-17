@@ -24,7 +24,7 @@ def select_centers(x,k):
 
     while done:
 
-        if count > 300:
+        if count > 50:
             break
         
         S = []
