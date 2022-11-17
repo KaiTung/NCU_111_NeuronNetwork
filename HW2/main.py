@@ -59,6 +59,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.horizontalSlider_k.valueChanged.connect(self.slider_change)
         self.horizontalSlider_sigma.valueChanged.connect(self.slider_change)
 
+        #取得 checkBox_trace
+        self.checkBox_trace = self.findChild(QtWidgets.QCheckBox,"checkBox_trace")
+
         # 連結按鈕事件
         self.pushButton_GO = self.findChild(QtWidgets.QPushButton,"pushButton_GO")
         self.pushButton_GO.clicked.connect(self.run)
@@ -124,10 +127,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 c = self.p.car.getPosition('center')
                 state_6d = np.concatenate((np.array([c.x,c.y]),np.array(state)),axis=0)
                 action = self.RBFN.predict([state_6d])[0]
-                path_record_6D += "{:<} {:<} {:<} {:<} {:<} {:<}\n".format(round(self.p.car.getPosition().x,7),round(self.p.car.getPosition().y,7),round(state[0],7),round(state[1],7),round(state[2],7),round(action,7))
+                path_record_6D += "{:<} {:<} {:<} {:<} {:<} {:<}\n".format(round(self.p.car.getPosition().x,7),round(self.p.car.getPosition().y,7),
+                                                                            round(state[0],7),round(state[1],7),round(state[2],7),round(action,7))
             # print("state={},center={},action={}".format(state, self.p.car.getPosition('center'),action))
             state = self.p.step(action)
-            self.p.draw_new_graph()
+            self.p.draw_new_graph(trace = self.checkBox_trace.isChecked())
             self.show_new_graph()
             text = "感測器距離(取至後三位): 前{:<5} 右{:<5} 左{:<5}".format(round(state[0],3),round(state[1],3),round(state[2],3))
             self.label_sensor.setText(text)
@@ -145,6 +149,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def show_new_graph(self):
         self.label_image.setPixmap(QtGui.QPixmap("pic.png"))
         QtWidgets.QApplication.processEvents()
+
 
 
 def main():

@@ -54,7 +54,6 @@ class MyRBFN(object):
         predictions = np.dot(phi_of_x, self.weights)
         return predictions
         
-
 if __name__ == "__main__":
     # fitting RBF-Network with data
     p1,p2,p3 = 116, 2, 116

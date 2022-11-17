@@ -106,6 +106,8 @@ class Playground():
             Line2D(-6, 0, 6, 0),  # start line
             Line2D(0, 0, 0, -3),  # middle line
         ]
+        self.path_record_x = []
+        self.path_record_y = []
         self.car = Car()
         self.reset()
         
@@ -262,6 +264,8 @@ class Playground():
 
     def reset(self):
         self.done = False
+        self.path_record_x = []
+        self.path_record_y = []
         self.car.reset()
         if self.car_init_angle and self.car_init_pos:
             self.setCarPosAndAngle(self.car_init_pos, self.car_init_angle)
@@ -288,13 +292,14 @@ class Playground():
 
         if not self.done:
             self.car.tick()
-
+            self.path_record_x.append(self.car.xpos)
+            self.path_record_y.append(self.car.ypos)
             self._checkDoneIntersects()
             return self.state
         else:
             return self.state
 
-    def draw_new_graph(self,init = 1):
+    def draw_new_graph(self,init = 1,trace=False):
         try:
             # plt.clf()
             ax = plt.figure().add_subplot(111)
@@ -331,6 +336,10 @@ class Playground():
                 p1 = self.car.getPosition("left")
                 p2 = self.left_intersects[0]
                 plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
+
+                if trace:
+                    #畫軌跡
+                    plt.scatter(self.path_record_x,self.path_record_y,color='red',s=0.2)
 
             plt.xlim([-15,55])
             plt.ylim([-15,55])
