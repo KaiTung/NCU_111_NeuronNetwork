@@ -1,34 +1,67 @@
 import matplotlib.pyplot as plt
 from PyQt5 import QtWidgets, QtGui, uic
+from PyQt5.QtCore import QThread
 from simple_playground_new import Playground
 from MyRBFN import *
 import sys
 import os
 
-#Hyper paramater
-LAYERS = 60
-SIGMA = 2
-K = 60
-PATH_TO_FILE = "train4dAll.txt"
+class Thread(QThread):
 
-class MyGUI(QtWidgets.QMainWindow):
+  def __init__(self,RBFN,pushButton_GO,pushButton_Train):
+    super(Thread, self).__init__()
+    self.RBFN = RBFN
+    self.pushButton_GO = pushButton_GO
+    self.pushButton_Train = pushButton_Train
+
+  def run(self):
+    self.RBFN.fit()
+    self.pushButton_GO.setEnabled(True)
+    self.pushButton_Train.setEnabled(True)
+
+class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
-        super(MyGUI, self).__init__()
+        super(MainWindow, self).__init__()
         self.ui = uic.loadUi('MyGUI.ui', self)
-        self.p = Playground()
-        self.RBFN = MyRBFN(hidden_shape = LAYERS,sigma = SIGMA,k = K)
-        self.RBFN.read_training_data(PATH_TO_FILE)
-        self.RBFN.fit()
+        self.setWindowIcon(QtGui.QIcon("icon.png"))
+
         # 取得label_image
         self.label_image = self.findChild(QtWidgets.QLabel,"label_image")
         self.label_image.setScaledContents(True)
         # 取得label_sensor
         self.label_sensor = self.findChild(QtWidgets.QLabel,"label_sensor")
 
+        # 取得參數設定lineEdit
+        self.lineEdit_layers = self.findChild(QtWidgets.QLineEdit,"lineEdit_layers")
+        self.lineEdit_k = self.findChild(QtWidgets.QLineEdit,"lineEdit_k")
+        self.lineEdit_sigma = self.findChild(QtWidgets.QLineEdit,"lineEdit_sigma")
+        self.comboBox_file = self.findChild(QtWidgets.QComboBox,"comboBox_file")
+
+        self.lineEdit_layers.textChanged.connect(self.lineEdit_change)
+        self.lineEdit_k.textChanged.connect(self.lineEdit_change)
+        self.lineEdit_sigma.textChanged.connect(self.lineEdit_change)
+
+        #取得 slider
+        self.horizontalSlider_layers = self.findChild(QtWidgets.QAbstractSlider,"horizontalSlider_layers")
+        self.horizontalSlider_k = self.findChild(QtWidgets.QAbstractSlider,"horizontalSlider_k")
+        self.horizontalSlider_sigma = self.findChild(QtWidgets.QAbstractSlider,"horizontalSlider_sigma")
+
+        self.horizontalSlider_layers.valueChanged.connect(self.slider_change)
+        self.horizontalSlider_k.valueChanged.connect(self.slider_change)
+        self.horizontalSlider_sigma.valueChanged.connect(self.slider_change)
+
         # 連結按鈕事件
         self.pushButton_GO = self.findChild(QtWidgets.QPushButton,"pushButton_GO")
         self.pushButton_GO.clicked.connect(self.run)
+
+        self.pushButton_Train = self.findChild(QtWidgets.QPushButton,"pushButton_Train")
+        self.pushButton_Train.clicked.connect(self.model_fit)
+
+
+        self.p = Playground()
+        self.RBFN = MyRBFN()
+        self.model_fit()
 
         self.p.draw_new_graph(init=0)
         self.label_image.setPixmap(QtGui.QPixmap("pic.png"))
@@ -36,6 +69,34 @@ class MyGUI(QtWidgets.QMainWindow):
 
         # Show the GUI
         self.show()
+
+    def slider_change(self):
+        self.lineEdit_layers.setText(str(self.horizontalSlider_layers.value()))
+        self.lineEdit_k.setText(str(self.horizontalSlider_k.value()))
+        self.lineEdit_sigma.setText(str(self.horizontalSlider_sigma.value()))
+
+    def lineEdit_change(self):
+        self.horizontalSlider_layers.setValue(int(self.lineEdit_layers.text()))
+        self.horizontalSlider_k.setValue(int(self.lineEdit_k.text()))
+        self.horizontalSlider_sigma.setValue(int(self.lineEdit_sigma.text()))
+
+    def model_fit(self):
+        #更改參數並重新訓練
+        QtWidgets.QApplication.processEvents()
+        LAYERS = int(self.lineEdit_layers.text())
+        SIGMA = int(self.lineEdit_sigma.text())
+        K = int(self.lineEdit_k.text())
+        PATH_TO_FILE = self.comboBox_file.currentText()
+        print("layers={} k={} sigma={} file={}".format(LAYERS,K,SIGMA,PATH_TO_FILE))
+        self.RBFN.set_parameter(h = LAYERS,s = SIGMA,k = K)
+        self.RBFN.read_training_data(PATH_TO_FILE)
+        try:
+            self.pushButton_GO.setEnabled(False)
+            self.pushButton_Train.setEnabled(False)
+            self.thread = Thread(self.RBFN,self.pushButton_GO,self.pushButton_Train)
+            self.thread.start()
+        except Exception as e:
+            print(e)
 
     def run(self):
         # use example, select random actions until gameover
@@ -47,15 +108,20 @@ class MyGUI(QtWidgets.QMainWindow):
         plt.pause(0.5)
         # fitting RBF-Network with data
         while not self.p.done:
-            action = self.RBFN.predict([state])[0]
+            if self.comboBox_file.currentText() == "train4dAll.txt":
+                action = self.RBFN.predict([state])[0]
+            elif self.comboBox_file.currentText() == "train6dAll.txt":
+                c = self.p.car.getPosition('center')
+                state_6d = np.concatenate((np.array([c.x,c.y]),np.array(state)),axis=0)
+                action = self.RBFN.predict([state_6d])[0]
             # print("state={},center={},action={}".format(state, self.p.car.getPosition('center'),action))
             state = self.p.step(action)
             self.p.draw_new_graph()
             self.show_new_graph()
             self.label_sensor.setText("感測器距離(取至後三位): 前{} 右{} 左{}".format(round(state[0],3),round(state[1],3),round(state[2],3)))
-            path_record_6D += "{} {} {} {} {} {}\n".format(round(self.p.car.getPosition().x,7),round(self.p.car.getPosition().y,7),round(state[0],7),round(state[1],7),round(state[2],7),round(action,7))
-            path_record_4D += "{} {} {} {}\n".format(round(state[0],7),round(state[1],7),round(state[2],7),round(action,7))
-            plt.pause(0.05)
+            path_record_6D += "{:<} {:<} {:<} {:<} {:<} {:<}\n".format(round(self.p.car.getPosition().x,7),round(self.p.car.getPosition().y,7),round(state[0],7),round(state[1],7),round(state[2],7),round(action,7))
+            path_record_4D += "{:<} {:<} {:<} {:<}\n".format(round(state[0],7),round(state[1],7),round(state[2],7),round(action,7))
+            plt.pause(0.02)
         print("===DONE===")
 
         #寫入路徑紀錄
@@ -71,7 +137,7 @@ class MyGUI(QtWidgets.QMainWindow):
 
 def main():
     app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplication
-    window = MyGUI() # Create an instance of our class
+    window = MainWindow() # Create an instance of our class
     app.exec_() # Start the application
     
     #刪掉圖片

@@ -342,13 +342,21 @@ class Playground():
         
 def run_example():
     # use example, select random actions until gameover
+    PATH = "train6dAll.txt"
     p = Playground()
-    model = MyRBFN(hidden_shape= 58,sigma=1,k=58)
-    model.read_training_data("train4dAll.txt")
+    model = MyRBFN()
+    model.set_parameter(h=10,s=2,k=10)
+    model.read_training_data(PATH)
     model.fit()
     state = p.reset()
     while not p.done:
-        action = model.predict([state])[0]
+        if PATH == "train4dAll.txt":
+                action = model.predict([state])[0]
+        elif PATH == "train6dAll.txt":
+            c = p.car.getPosition('center')
+            ac = np.array([c.x,c.y])
+            state = np.array(state)
+            action = model.predict(np.concatenate((ac,state),axis=0))[0]
         # action = 0
         # take action
         print("state={},\ncenter={}\naction={},wheel_angle ={}".format(state, p.car.getPosition('center'),action,p.car.wheel_angle))
