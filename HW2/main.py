@@ -136,6 +136,7 @@ class MainWindow(QtWidgets.QMainWindow):
             text = "感測器距離(取至後三位): 前{:<5} 右{:<5} 左{:<5}".format(round(state[0],3),round(state[1],3),round(state[2],3))
             self.label_sensor.setText(text)
             plt.pause(0.02)
+        self.show_new_graph()
         print("===DONE===")
 
         #寫入路徑紀錄
@@ -147,8 +148,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 f.write(path_record_4D)
         
     def show_new_graph(self):
-        self.label_image.setPixmap(QtGui.QPixmap("pic.png"))
         QtWidgets.QApplication.processEvents()
+        self.label_image.setPixmap(QtGui.QPixmap("pic.png"))
+        
 
 
 
