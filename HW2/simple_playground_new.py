@@ -347,7 +347,7 @@ class Playground():
             plt.close()
         except:
             plt.close()
-            return
+        return
         
 def run_example():
     # use example, select random actions until gameover

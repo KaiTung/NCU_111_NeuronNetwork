@@ -148,20 +148,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 f.write(path_record_4D)
         
     def show_new_graph(self):
-        QtWidgets.QApplication.processEvents()
         self.label_image.setPixmap(QtGui.QPixmap("pic.png"))
+        QtWidgets.QApplication.processEvents()
         
-
-
-
 def main():
     app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplication
     window = MainWindow() # Create an instance of our class
     app.exec_() # Start the application
-    
-    #刪掉圖片
-    if os.path.exists("pic.png"):
-        os.remove("pic.png")
 
 if __name__ == '__main__':
     main()
