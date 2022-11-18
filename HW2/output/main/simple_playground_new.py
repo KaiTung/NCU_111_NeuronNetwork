@@ -249,7 +249,6 @@ class Playground():
         self._setIntersections(front_intersections,
                                left_intersections,
                                right_intersections)
-
         # results
         self.done = done
         return done
@@ -301,8 +300,8 @@ class Playground():
 
     def draw_new_graph(self,init = 1,trace=False):
         try:
-            # plt.clf()
             ax = plt.figure().add_subplot(111)
+
             #畫起點
             p1 = self.decorate_lines[0].p1
             p2 = self.decorate_lines[0].p2
@@ -313,10 +312,16 @@ class Playground():
             ax.add_patch(rect)
 
             # 畫牆壁
+            x=[]
+            x.append(self.lines[0].p1.x)
+            y=[]
+            y.append(self.lines[0].p1.y)
             for line in self.lines:
-                p1 = line.p1
                 p2 = line.p2
-                plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "black")
+                x.append(p2.x)
+                y.append(p2.y)
+
+            plt.plot(x,y,c = "black")
 
             if init:
                 # 畫車
@@ -324,21 +329,16 @@ class Playground():
                 circle = patches.Circle((self.car.xpos,self.car.ypos),radius = 3,fill = False)
                 ax.add_patch(circle)
 
-                # # 感測器線條(前，右，左)
-                p1 = self.car.getPosition("front")
-                p2 = self.front_intersects[0]
-                plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
-
-                p1 = self.car.getPosition("right")
-                p2 = self.right_intersects[0]
-                plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
-
-                p1 = self.car.getPosition("left")
-                p2 = self.left_intersects[0]
-                plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
+                # 感測器線條(前，右，左)
+                intersects = [self.front_intersects[0],self.right_intersects[0],self.left_intersects[0]]
+                pos = ["front","right","left"]
+                for i in range(3):
+                    p1 = self.car.getPosition(pos[i])
+                    p2 = intersects[i]
+                    plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "red")
 
                 if trace:
-                    #畫軌跡
+                    # 畫軌跡
                     plt.scatter(self.path_record_x,self.path_record_y,color='red',s=0.2)
 
             plt.xlim([-15,55])
@@ -347,7 +347,6 @@ class Playground():
             plt.close()
         except:
             plt.close()
-            return
         
 def run_example():
     # use example, select random actions until gameover

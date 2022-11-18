@@ -136,7 +136,6 @@ class MainWindow(QtWidgets.QMainWindow):
             text = "感測器距離(取至後三位): 前{:<5} 右{:<5} 左{:<5}".format(round(state[0],3),round(state[1],3),round(state[2],3))
             self.label_sensor.setText(text)
             plt.pause(0.02)
-        self.show_new_graph()
         print("===DONE===")
 
         #寫入路徑紀錄
@@ -155,6 +154,9 @@ def main():
     app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplication
     window = MainWindow() # Create an instance of our class
     app.exec_() # Start the application
+
+    if os.path.exists("pic.png"):
+        os.remove("pic.png")
 
 if __name__ == '__main__':
     main()
