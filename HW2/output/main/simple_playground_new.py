@@ -152,11 +152,18 @@ class Playground():
                     line = Line2D(inip, p)
                     inip = p
                     self.lines.append(line)
+            
+            self.x=[]
+            self.x.append(self.lines[0].p1.x)
+            self.y=[]
+            self.y.append(self.lines[0].p1.y)
+            for line in self.lines:
+                p2 = line.p2
+                self.x.append(p2.x)
+                self.y.append(p2.y)
+
         except Exception:
             self._setDefaultLine()
-
-    def predictAction(self, state):
-        return self.RBFN.predict(state)
 
     @property
     def n_actions(self):  # action = [0~num_angles-1]
@@ -308,20 +315,12 @@ class Playground():
             plt.plot((p1.x,p2.x),(p1.y,p2.y),c = "blue")
 
             #畫終點線
-            rect = patches.Rectangle((18,37),12,3,color = 'blue')#左下座標,長度,寬度
+            d = self.destination_line
+            rect = patches.Rectangle((d.p1.x,d.p2.y),abs(d.p1.x - d.p2.x),abs(d.p1.y - d.p2.y),color = 'blue')#左下座標,長度,寬度
             ax.add_patch(rect)
 
             # 畫牆壁
-            x=[]
-            x.append(self.lines[0].p1.x)
-            y=[]
-            y.append(self.lines[0].p1.y)
-            for line in self.lines:
-                p2 = line.p2
-                x.append(p2.x)
-                y.append(p2.y)
-
-            plt.plot(x,y,c = "black")
+            plt.plot(self.x,self.y,c = "black")
 
             if init:
                 # 畫車
@@ -341,8 +340,11 @@ class Playground():
                     # 畫軌跡
                     plt.scatter(self.path_record_x,self.path_record_y,color='red',s=0.2)
 
-            plt.xlim([-15,55])
-            plt.ylim([-15,55])
+            x_max, x_min = max(self.x),min(self.x)
+            y_max, y_min = max(self.y),min(self.y)
+            lim1, lim2 = min(x_min,y_min) - 7, max(x_max,y_max) + 5
+            plt.xlim([lim1,lim2])
+            plt.ylim([lim1,lim2])
             plt.savefig("pic.png")
             plt.close()
         except:
