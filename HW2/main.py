@@ -45,6 +45,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEdit_k = self.findChild(QtWidgets.QLineEdit,"lineEdit_k")
         self.lineEdit_sigma = self.findChild(QtWidgets.QLineEdit,"lineEdit_sigma")
         self.comboBox_file = self.findChild(QtWidgets.QComboBox,"comboBox_file")
+        self.comboBox_record = self.findChild(QtWidgets.QComboBox,"comboBox_record")
 
         self.lineEdit_layers.textChanged.connect(self.lineEdit_change)
         self.lineEdit_k.textChanged.connect(self.lineEdit_change)
@@ -68,6 +69,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.pushButton_Train = self.findChild(QtWidgets.QPushButton,"pushButton_Train")
         self.pushButton_Train.clicked.connect(self.model_fit)
+        
+        self.pushButton_rr = self.findChild(QtWidgets.QPushButton,"pushButton_read_record")
+        self.pushButton_rr.clicked.connect(self.read_record)
 
 
         self.p = Playground()
@@ -128,7 +132,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 state_6d = np.concatenate((np.array([c.x,c.y]),np.array(state)),axis=0)
                 action = self.RBFN.predict([state_6d])[0]
                 path_record_6D += "{:<} {:<} {:<} {:<} {:<} {:<}\n".format(round(self.p.car.getPosition().x,7),round(self.p.car.getPosition().y,7),
-                                                                            round(state[0],7),round(state[1],7),round(state[2],7),round(action,7))
+                                                                           round(state[0],7),round(state[1],7),round(state[2],7),round(action,7))
             # print("state={},center={},action={}".format(state, self.p.car.getPosition('center'),action))
             state = self.p.step(action)
             self.p.draw_new_graph(trace = self.checkBox_trace.isChecked())
@@ -149,6 +153,34 @@ class MainWindow(QtWidgets.QMainWindow):
     def show_new_graph(self):
         self.label_image.setPixmap(QtGui.QPixmap("pic.png"))
         QtWidgets.QApplication.processEvents()
+
+    def read_record(self):
+        self.p.reset()
+        self.pushButton_GO.setEnabled(False)
+        self.pushButton_Train.setEnabled(False)
+        self.pushButton_rr.setEnabled(False)
+        f_name = self.comboBox_record.currentText()
+        record = []
+        with open(f_name,'r') as f:
+            for line in f.readlines():
+                record.append(float(line.split()[-1]))
+
+        count = 0
+        while not self.p.done:
+            state = self.p.step(record[count])
+            self.p.draw_new_graph(trace = self.checkBox_trace.isChecked())
+            self.show_new_graph()
+            text = "感測器距離(取至後三位): 前{:<5} 右{:<5} 左{:<5}".format(round(state[0],3),round(state[1],3),round(state[2],3))
+            self.label_sensor.setText(text)
+            plt.pause(0.02)
+            count+=1
+        print("===DONE===")
+        self.pushButton_GO.setEnabled(True)
+        self.pushButton_Train.setEnabled(True)
+        self.pushButton_rr.setEnabled(True)
+
+
+
         
 def main():
     app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplication
