@@ -258,6 +258,31 @@
          </widget>
         </item>
         <item>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QComboBox" name="comboBox_record">
+            <item>
+             <property name="text">
+              <string>track4D.txt</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>track6D.txt</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_read_record">
+            <property name="text">
+             <string>讀檔</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <widget class="QCheckBox" name="checkBox_trace">
           <property name="text">
            <string>開啟軌跡</string>
