@@ -51,7 +51,6 @@ class MyHopifield():
     def save_img(self,x,name):
         for i in range(x.shape[0]):
             plt.axis('off')
-            plt.margins(0)
             plt.imshow(x[i],cmap='Greys')
             plt.savefig("{}_{}".format(name,i))
 
@@ -119,7 +118,7 @@ def delete_img(self,mode):
 def main():
     Hopfield = MyHopifield()
 
-    Hopfield.fit(mode = "Basic")
+    # Hopfield.fit(mode = "Basic")
     Hopfield.fit(mode = "Bonus")
         
 

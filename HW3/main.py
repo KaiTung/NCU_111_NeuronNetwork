@@ -96,6 +96,5 @@ def main():
     window = MainWindow() # Create an instance of our class
     app.exec_() # Start the application
             
-
 if __name__ == '__main__':
     main()
