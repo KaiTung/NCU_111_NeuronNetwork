@@ -83,7 +83,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.comboBox.currentText() == "Basic":
             self.comboBox_2.addItems(['0','1','2'])
         else:
-            self.comboBox_2.addItems(['0','1','2','3','4','5','6','7','8','9','10','11','12','13'])
+            self.comboBox_2.addItems(['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14'])
         
         self.change_img()
         self.check()
